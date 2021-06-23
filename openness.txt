@@ -1,0 +1,693 @@
+
+jerry.zhang@intel.com
+huifeng.le@intel.com
+xuekun.hu@intel.com
+shaohe.feng@intel.com
+
+NFC DPI
+FRR
+POC方案
+
+
+1| SDN Controller北向需要明确知道CONFIG NODE的IP，可打Label      huifeng
+2| Container个数？可3个container，建议1个container               frank
+3| 澄清组网方案，LAN,WAN,CNI组网方式（几种），及流量模型。       frank
+4| VPP对接CNI接口可借见或参考OpenWRT实现？VHOST方案              zhiyong
+5| FRR与VPP已对接（可联系xuekun)-Luming                          xuekun
+6| CRD Container增加对CNF(VPP)的支持，方案需要明确出来（如直接修改现有接口或新增Plugin)。   xuekun
+
+
+1、列举已做的Sharing和下一步Plan
+
+
+[3:59 PM] Cong Hu
+    
+
+0. vpp route plugin to support add for SFC ( ovn4nfv)
+
+
+
+
+
+1. pending  (tieto work for it) 是否一套代码支持两个CRD controller
+
+2. 本地做验证, 如果FRR可以独立在一个容器就多个容器。否则打在一起
+
+3. verify 4条
+
+6. 用sdewan-openWRT 
+
+7. verify word转 MD 是否容易 多用文档， 找英语好的同时review
+
+8. 由于4月15号有SDEWAN的deliver 有testcase 和testplan， 设计后启动testplan
+
+
+
+
+1、确认tap增强是否影响OVN网络发现，考虑使用方式二，路由由SDN Controller配置路由，内网和外网隔离。
+2、FRR用于承载网路由学习
+
+
+
+
+
+
+1. Run CNF in OpenNESS is just ok. 聚焦CNI(几种不同的CNI)，另一块是设计自动化部署涉及对K8S的应用理解。
+2. Run auto Test 梳理出一些问题点，寻求可能的帮助。
+3. 本周提供设计
+
+
+ 
+
+
+2020/1/25
+
+1、权限问题（春连）
+
+
+1 业务由MCall进行下发，由部署人员进行规划,比如根据Service name:port进行配置，但需要由CNF展开为路由或配置策略。
+2 业务上考虑抽象转换即可，如服务发现，端口IP自动映射。
+3 分析LAN口、WAN口，CNI口各流量怎么控制，怎么走。
+4 OpenNESS DNS服务器与xiaopeng沟通。
+5 可先从功能上进行打通(一种方式），另一种方式考虑对用户态CNI(DPDK)的对接支持- Shaohe。
+6 Camera 业务配置场景，及开通方式。分析下OpenNESS的运行方式（如白皮书），可先请xiaopeng沟通。
+
+
+
+
+
+1 Camera挂在PC/UE侧
+2 POD可支持配置多个CNI
+3 
+
+
+
+
+
+
+1 POC使用最简单的场景打通即可，确保自动配置
+2 区分多种CNI部署下，veth的区分管理
+3 
+
+
+
+
+1 技能储备较少，任务推进很慢 ： 测试（环境搭建、Robot学习）； 开发（遗留性能和Verfiy工作，设计文档不完备）
+2 请假较多
+
+计划：
+1、完成设计串讲和优化（年前）
+2、按项目计划，有序调度Feature开发工作，安排M2 Sprint Plan.
+
+
+PRD Design M1
+
+
+Sophie Review设计文档
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1 测试方案： VPP20.09建议覆盖Netconf API 和 稳定性测试  和 一致性测试,测试完成时间控制在3.21之前。
+2 Test report 以Sub Milestone为单位。
+3 第二次串讲控制在周五。
+
+
+
+
+
+
+正式Review
+
+zhiyong
+1 简化网络拓扑(way )。
+  a 命名统一
+  b 物理组网流程及描述
+  b 逻辑组网（分层）及流程，描述
+  e 针对专有名字有一个介绍以及作用
+  f HubControlter 改 Overlay Controller
+
+PS： 总体部分简化，细节在子系统中展开，特别是控制流，数据流，管理流。
+
+xiaopeng
+4 建议逻辑网络和物理网络区分
+frank
+5 POD中标明Container个数
+6 确定Localmangement是否通过CNI可管理
+7 图中各个flow的颜色表示明确出来
+8 分开描述WAN，LAN，CNI流量图及逻辑模型
+9 全文CNI支持需支持通用CNI，并提供支持的CNI列表
+10 性能不在此设计中展开，可备注说明
+11 考虑在有FW的情况下，可走CNI
+12 自动化部署不在此文中体现，后续设计跟进
+
+huifeng
+13 可考虑Overaly Controller 直接控制到Remote Management
+zhiyong
+14 一个或多个集群需要体现出来
+
+其它：
+1 Timo/Tianyi Comments?
+2 严格的质量流程（如）：
+首次串讲 -> Intel Review and report -> fix -> Internal Review OK -> 二次串讲（针对问题）
+3 非专业领域人员Review并可理解。
+
+
+
+
+1. ovn4nfv 环境搭建 以及multus支持
+2. ovn4nfv SFC 验证
+3. vpp routing pluin research for SFC
+4. user space CNI for high performance
+5. auto deployment base on openness.
+6. openness environment build on (pending by barbor)
+7. xtest research.
+8. overlay control code research.
+
+
+1 发邮件确认M2范围
+2 M2 Sprint
+3 跟进Comments回复
+
+4 首版SDEWAN(VPP)代码上库 与 OpenNESS打出相应分支 2.22号
+5 测试计划 模板与架构Review
+
+
+
+
+
+
+M2 Requriments Scope
+Chuanlian: Test plan style and scope
+Luming: FRR version and branch confirm and maintaince code or rpm
+Luming: GPIO scope and document, device
+Overlay Controller API adaption scope?
+Deployment Requriments(DOD)
+
+
+--Intel Illand Comments
+--Code Branch name and location
+
+0223
+Krishna Comments - new
+Zheng Task
+
+
+
+
+
+1. Keep old design way( Support Non-K8S deployment)
+2. Second way is first
+
+1. Scope of K8S API
+2. Update design draw
+
+Krishna
+ido-specs/sdwan-hub-arch.png at master · open-ness/ido-specs (github.com)
+
+
+
+每周五更新ESG材料。
+更新本周M2 ESG（本周二）
+
+1. 测试功能Scope定下来，email邮件 -- process；
+2. Timo as part SE?
+3. OpenNESS 一周两次的讨论会（周一，周四）, Zhiyong组织。
+
+
+1. 代码今天提交，并英文反馈。
+2. 反馈第二次: x-test sharing时间 确定周五是否？
+
+3. Project plan增加一列comments
+
+
+Offline installation support discussion -- intel give a offline packet.
+澄清Update代码管理方式 - maintaince self and tracking on update
+Patch maintaince for SDEWAN.   
+
+
+澄清Docker image for M2 和 Deployment方式
+#澄清Strongswan(IKEv1)修改量
+澄清OAM for CFM方式 - 与uCPE相同
+设备GPIO开发手册 -  framework即可
+
+
+Overall the network view is entirely missing, both physical and virtual. Many things would be clear by providing such view that are now omitted
+LAN: Only one LAN or many? Always flat network or something else? If many, are all routable/NATed to some CNI networks? Routed between each other?
+Which services are available on WAN underlay(s), especially are Kubernetes and Netconf?
+CNI networks: Some diagrams show multiple networks, so that seems assumed? Can they be created and destroyed dynamically? If yes, is SDEWAN expected to get interfaces/configuration to them dynamically and automatically?
+WAN underlay: Are all WAN ports in a the same routable network? Which services are available on WAN underlay(s), especially are Kubernetes and Netconf?
+WAN overlay: Clearly there can be a number of tunnels that are managed dynamically. Can there be multiple isolated or mutually routed overlay networks? If yes, is NATing/SFC between each of them and CNI networks configured separately?
+
+
+discussion:
+MWAN 
+DPI
+Firewall 
+LocalManagement
+
+Test plan document:
+1. Test topo
+2. Test function : 
+
+
+
+0. 沟通问题
+1. 技能储备
+2. 交付经验（document、coding、deployment)
+3. 效率
+
+
+0. 进度：
+   A. 项目团队尽早介入
+   B. 
+1. 效率（流程）：
+   A. 问题及时暴露，及时沟通（临时沟会）
+   B. Ram up 时间不足，导致交付范围缩小
+   C. 工具检查加速，集中一个人执行代码检查
+2. 配合：
+   A. Tieto是第一责任人，主导项目沟通。
+   B. Tieto及时暴露问题，问题驱动（配合模式-项目管理层面），并让Intel提供支援，按人跟踪。
+   C. Tieto流程+Intel流程，需更多时间了解双方流程。
+   D. Highlight人力不足问题，公司层面。项目内不练兵。
+
+3. 技术
+   FRR over IPSEC(Hub-Hub）
+   Sweetcomb须重命名
+   与Xiaopeng确认XDP支持
+   
+   MWAN3采用VPP支持，FW可使SFC集成,nDPI M2集成POD，后续按flever提供
+   当前M2紧急情况：
+   1. deployment   patch提交@Luming @Tao
+   2. SFC plugin 31号前需开发完成
+   3. GPIO
+
+POC分两步验证：
+	1. Poc 提供功能验证
+	2. Pefarmence CNI 独立验证
+	
+CRD Agent与Huifeng沟通
+
+
+1. Test plan document
+2. Test env 
+
+
+Zhiyong backup:
+sherry.qi.zhang@intel.com
+
+
+
+
+1. del: in K8S cluster
+2. SDWEAN 抄官网描述
+3  分Edge 和 Hub分别描述性能
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Topic:
+1. 昨日主要沟通事项同步
+2. M2 关键Deliver 任务要求
+3. 其它任务进展情况
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1. 再次确认M2关键任务的完成时间和要求
+   A. Deployment两步提交 31th, 9th （当前出现一个可疑的CICD问题，同时由于无C code check工具，后续这部分CICD问题，会降低Tieto工作效率，影响任务交付）
+   B. FRR SFC 30完成SFC Plugin, 3th完成所有部分测试
+   C. X-TEST 权限问题今天必须获取，明天有条件完成环境搭建（目前，OEK安装最后一步出错） 31th
+   D. Test Plan明天可提交初稿
+
+
+2. 与Huifeng沟通CRD Agent的部署问题。
+
+3. 其它自由讨论
+
+
+
+
+0. Hight CICD scope error
+
+1. Keep Sweetcomb name
+2. yang file which refered from 3td community don't need maintain by openness
+3. create the teams file for collecting the evidence of security check.
+
+
+确认是否每次需PR到开发分支
+
+
+1.	License.
+2.	Security check for HTTPs.
+3. Yang file name
+
+
+1. update support list
+2. overall we support - > it support , delete may. named->treated as, they can->which can
+3. overall global ip. when ... obtains
+4. vpp cluster. SDWAN is configured by...
+5. CRD: crd reverts ... to ... as a adapter.
+
+
+
+2. M1 document state(tieto) next-step(intel)
+
+1. M2 Scope Confirm
+3. IkEv1编译         (high light)
+4. dnsmasq    (assessment first)
+
+
+5. cnf root run...
+6. localmangement readme,  also include other modules . and how to run
+7. test way to pr 
+8. strongswan  vpp-plugin is apache
+9. book meeting for document review.
+10. local management need pylint check and fix?
+
+
+
+1. github 到期
+2. 设备问题
+
+
+
+
+
+
+
+
+
+
+
+
+1. Performance CNI
+
+2. FW CRD?    (for M3.)
+3. strongswan IKEv1可在M2期间在Ubuntu发布。
+
+
+4. 周末提供场景1，场景4的报告，并与印度团队对接先进行测试。
+5. Sweetcomb Copyright采用第三方相同引入即可。
+6. IKEv1 apache.
+7. Non root验证（OpenNESS 与 CNF）
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1. M1文档更新计划(周二）
+2. 当前对M1的投入对M2,M3的影响范围
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1. Research EPA,HDDL-R, Telemetry 
+2. CRD Controller.
+
+
+
+
+
+
+3. sweetcomb有一个plan进行单独回复。
+
+
+
+
+=$I$12:$Z$12,$I$20:$Z$20,$I$28:$Z$28,$I$36:$Z$36,$I$44:$Z$44,$I$52:$Z$352,$I$60:$Z$60
+
+
+.... M3 plan. 
+.... M3 device lsit
+.... update rtm.
+Chuanlian,Qiang buffer for support intel.
+
+
+1. 重新发送M2 2个deliver的report和readme.
+2. tieto 给出每个模块的开发语言。
+3. EPA(check PRD with intel). HDDL(视频卡 - openvino）, Telemetry(SDEWAN CNF需吞出相应数据, VPP集成clkd, check PRD）.
+4. M3 device list.
+
+
+周四：
+1. CRD of FW 功能澄清.
+2. openvino reference, can't vist hddl.
+3. how to improve deployment progress.
+4. sweetcomb pr?
+5.
+
+
+
+1．	CR of FW clarification(can we use vpp acl instead?) @Cong Hu @Hu, Xuekun
+2．	Can’t visit hddl @Cong Hu @Yang, Zhiyong 
+3．	Sweetcomb need twice pr @Cong Hu @Qiang Liu @Yang, Zhiyong(pls add Oven)
+4．	How to improve flavor deployment progress? @Tao Wang @Yang, Zhiyong 
+
+
+
+
+
+1. Route (PPT, 影响，解决方案)
+	- 重排计划
+	
+2. 性能测试（仅IPSEC, 包括CNI?)
+
+
+
+1700   400
+
+
+1700/22.5 = 77 M  77/3 = 26 人
+400/
+
+
+0. NTP.
+0. 验收情况（设备，是否远程支持）, 周1 Sharing
+1. C Test framework选型
+2. 性能测试（仅IPSEC, 包括CNI?)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+明天确认：
+1. 我们的目标是7.15号，8.15号Intel验收完毕?
+2. 准备在波兰搭建一套环境。？下午与Oralan确认是否为配置问题。 OK
+3. OVN4NFV有一个BUG,直接提Issue（春连）
+4. 跟踪辅测资源就绪情况（5.18)     
+5. 胡聪回复最小化或可行的部署方式。  OK
+6. Breakdown Task 并与Intel澄清，并识别High Risk Task
+7. 明确人员的能力需求  OK
+8. 准备一个LM的Transfer scope
+9. Sweetcomb分离风险（含OS切换风险）
+
+
+
+
+0. CEK相关问题解决
+0. UT框架确定
+1. Deployment需求讨论
+2. Sweetcomb分离，以及OS切换，以及优先级确定
+3. Test plan(BGP/VRRP)
+
+
+准备： deliver able 的文件（在线）
+
+
+
+1. 澄清CNF运行Node及在cluster中的角色
+2. 需要开放OpenWRT的Deployment flavor代码权限
+
+3. Test case(deployment,scenario)
+
+
+
+
+代码：
+符合Intel要求，CI
+
+文档：
+参考OpenWRT的文档
+UT报告，安装部署，release
+
+测试：
+
+
+周报：
+每周结合八月那一张图进行讲解进度。
+
+汇总：
+已做的Summury总结给Intel,Zhongbao，包括风险和问题. 
+
+其它：
+VPP PR comments问题。不能合并到master，应该是dev.
+
+
+Test case
+Tieto内部需出一个，与Intel对。
+
+正式发出M1 review的正式通知。
+
+
+5.24
+0. 预申请采用手动部署ovn4nfc展开验收
+1. 确定Intel Review完成时间
+  2. Daily report 反馈M1问题，并Highlight
+3. 澄清UT与CICD的集成方式？
+4. Openwrt deployment code  '''
+5. 设备问题(xuekun)
+6. RestApi -> Sysrepo Adapter? draw a simple pic 
+
+
+
+
+发邮件确定M1相同时间的人员参与度，进行串讲M1  -===
+
+
+总结CNF角色问题，方案给南哥。
+标记8月份的user story.
+
+
+
+更新RTM到Intel Teams上面
+
+
+与团队和南哥确认单Node和多Node. 测试情况，二选一？
+发邮件和Huifeng,Frank确认Kubectl
+让天博投入进去，协助春连解决问题
+
+
+与春连确认：UT E2E MT
+
+
+1. Issue问题及进展确认
+2. 在解决OVN4NFV Issue后，4个场景是否可中止？
+
+
+画图-交付程序流程图
+与团队确认Sprint Plan时间（周末3点或周一晚上）
+
+
+M1文档反馈,check.  ansible 版本。 问题处理与提交。测试情况。
+1. 性能如何测试 （三台还是两台）
+2. 4个场景验收方式 (先验证一条过流程）
+3. CRD UT仅覆盖增量部分
+
+
+
+确定文付的文档清单
+
+Doc	Design,  Architecture, Integration Doc Update
+	Developer Guide (Update)
+	User Guide (Update)
+E2E Use Case	Test Plan, Test case List
+	Test reports
+	Test Automation Scripts, User Guide 
+	validation Done
+
+
+1. doc/reference-architectures
+   https://github.com/otcshare/ido-specs/blob/master/doc/reference-architectures/cera_sdwan.md
+2.CERA SD-WAN Hub Flavor: 
+	https://github.com/otcshare/ido-specs/blob/880e33f180e15121cea4465d687cc9471f6574fd/doc/flavors.md#cera-sd-wan-hub-flavor
+3. CERA SD-WAN Edge Flavor
+	https://github.com/otcshare/ido-specs/blob/880e33f180e15121cea4465d687cc9471f6574fd/doc/flavors.md#cera-sd-wan-edge-flavor
+4. E2E scenario
+  https://github.com/otcshare/edgeapps/blob/3e80cc6b0693cc10b33671143f6da0ee848c684a/network-functions/sdewan_cnf/e2e-scenarios/three-single-node-clusters/E2E-Overview.md
+5. E2E robot
+  https://github.com/otcshare/x-test/blob/d8f89ce9d6cbf134a9301010eb517a002b8f4c91/test_plans/ned/integration/ts35-sdwan-openwrt.md
+  
+
+
+1. 手工提供UT测试方案即可，暂不需要集成
+2. 8.15 需要上Ubuntu.
+   1. 评估现有已发布的整体部署的改动的工作量
+   2. 评估未发布的整体部署新增工作量
+   3. 评估其它模块的开发CRD,REST API（含环境重部署）可能增加的工作量
+   4. 评估手工测试（含环境部署）可能增加的工作量
+   5. 评估E2E测试（含环境部署）可能增强的工作量
+
