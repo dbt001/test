@@ -3,17 +3,13 @@ SPDX-License-Identifier: Apache-2.0
 Copyright (c) 2020 Intel Corporation  
 ```
 <!-- omit in toc -->
-# Converged Edge Reference Architecture for SD-WAN
+# Converged Edge Reference Architecture for SD-WAN(vpp based)
 - [Introduction](#introduction)
-- [Universal Customer Premises Equipment (u-CPE)](#universal-customer-premises-equipment-u-cpe)
-- [Software-Defined Wide Area Network (SD-WAN)](#software-defined-wide-area-network-sd-wan)
 - [SD-WAN Implementation](#sd-wan-implementation)
   - [SD-WAN CNF](#sd-wan-cnf)
   - [SD-WAN CRD Controller](#sd-wan-crd-controller)
   - [Custom Resources (CRs)](#custom-resources-crs)
-- [CNF Configuration via OpenWRT Packages](#cnf-configuration-via-openwrt-packages)
-  - [Multi WAN (Mwan3)](#multi-wan-mwan3)
-  - [Firewall (fw3)](#firewall-fw3)
+- [CNF Configuration via CRs](#cnf-configuration-via-openwrt-packages)
   - [IPSec](#ipsec)
 - [SD-WAN CNF Packet Flow](#sd-wan-cnf-packet-flow)
 - [OpenNESS Integration](#openness-integration)
@@ -32,8 +28,6 @@ Copyright (c) 2020 Intel Corporation
     - [NodeSelector For CNF](#nodeselector-for-cnf)
     - [Network and CNF Interface](#network-and-cnf-interface)
     - [Tunnel](#tunnel)
-    - [SNAT](#snat)
-    - [DNAT](#dnat)
 - [Resource Consumption](#resource-consumption)
   - [Methodology](#methodology)
   - [Results](#results)
@@ -50,24 +44,6 @@ Software-defined WAN (SD-WAN) introduces a new way to operate a WAN. First of al
 
 
 This paper describes how the Open Network Edge Services Software (OpenNESS) integrates uCPE features and SD-WAN capabilities to create  for edge optimization, and how it leverages SD-WAN functionality to allow edge-to-edge communication via a WAN.
-
-## Universal Customer Premises Equipment (u-CPE)
-Universal Customer Premise Equipment (uCPE) is a general-purpose platform that can host network functions, implemented in software, that are traditionally run in hardware-based Customer Premises Equipment (CPE). These network services are implemented as virtual functions or cloud-native network functions. Because they are implemented in software, they are well-suited to be hosted on edge nodes, because the nodes are located close to their end users, but also can be be orchestrated by the Controller of an edge computing system.
-
-## Software-Defined Wide Area Network (SD-WAN)
-An SD-WAN is a set of network functions that enable application-aware, intelligent, and secure routing of traffic across the WAN. An SD-WAN typically uses the public internet to interconnect its branch offices, securing the traffic via encrypted tunnels, basically treating the tunnels as "dumb pipes". Traffic at the endpoints can be highly optimized, because the network functions at a branch are virtualized and centrally managed. The SD-WAN manager can also make use of information about the applications running at a branch to optimize traffic.
-
-
-OpenNESS provides an edge computing-based reference architecture for SD-WAN, consisting of building blocks for SD-WAN network functions and reference implementations of branch office functions and services, all running on an OpenNESS edge node and managed by an OpenNESS Controller.
-
-The figure below shows an example of an OpenNESS based SD-WAN. In this figure, there are two edge nodes, "Manufacturing Plant" and "Branch Office". In each node are multiple OpenNESS-based clusters, each running the OpenNESS edge platform, but supporting different collections of network functions, such as Private 5G (e.g., the AF, NEF, gNB, UPF functions), SD-WAN network functions, or user applications.
-
-In this figure, the SD-WAN implementation is depicted in "SD-WAN NFs" boxes appearing in a number of OpenNESS clusters, and an "SD-WAN Controller" appearing in the Orchestration and Management function. Other functions seen in the figure are OpenNESS building blocks that the SD-WAN implementation uses to carry out its function.
-
-
-The next section describes the SD-WAN implementation.
-
-![OpenNESS reference solution for SD-WAN ](sdwan-images/openness-sdwan-ref.png)
 
 ## SD-WAN Implementation
 The CERA SD-WAN is based on OpenWrt, an embedded version of Linux designed for use in routers and other communication devices. OpenWrt is highly customizable, allowing it to be deployed with a small footprint, and has a fully-writable filesystem. More details about OpenWRT can be found [here](https://openwrt.org/).
@@ -154,73 +130,9 @@ The types of rules supported by the CRs are:
 
 In a Kubernetes namespace, with more than one CNF deployment and many SD-WAN rule CRDs, labels are used to correlate a CNF with SD-WAN rule CRDs.
 
-## CNF Configuration via OpenWRT Packages
+## CNF Configuration via CRs
 
 As explained earlier, the SD-WAN CNF contains a collection of services, implemented by OpenWRT packages. In this section, the services are described in greater detail.
-
-### Multi WAN (Mwan3)
-The OpenWRT mwan3 service provides  capabilities for multiple WAN management: WAN interfaces management, outbound traffic rules, traffic load balancing etc. The service allows an edge to connect to WANs of different providers and and to specify different rules for the links.
-
-According to the OpenWRT [website](https://openwrt.org), mwan3 provides the following functionality and capabilities:
-
-  - Provides outbound WAN traffic load balancing or fail-over with multiple WAN interfaces based on a numeric weight assignment.
-
-  - Monitors each WAN connection using repeated ping tests and can automatically route outbound traffic to another WAN interface if a current WAN interface loses connectivity.
-
-  - Creates outbound traffic rules to customize which outbound connections should use which WAN interface (i.e., policy-based routing). This can be customized based on source IP, destination IP, source port(s), destination port(s), type of IP protocol, and other parameters.
-
-  - Supports physical and/or logical WAN interfaces.
-
-  - Uses the firewall mask (default 0x3F00) to mark outgoing traffic, which can be configured in the /etc/config/mwan3 globals section, and can be mixed with other packages that use the firewall masking feature. This value is also used to set the number of supported interfaces.
-
-Mwan3 is useful for routers with multiple internet connections, where users have control over the traffic that flows to a specific WAN interface. It can handle multiple levels of primary and backup interfaces, where different sources can have different primary or backup WANs. Mwan3 uses Netfilter mark mask, in order to be compatible with other packages (e.g., OpenVPN, PPTP VPN, QoS-script, Tunnels), so that traffic can also be routed based on the default routing table.
-
-Mwan3 is triggered by a hotplug event when an interface comes up, causing it to create a new custom routing table and iptables rules for the interface. It then sets up iptables rules and uses iptables MARK to mark certain traffic. Based on these rules, the kernel determines which routing table to use. Once all the routes and rules are initially set up, mwan3 exits. Thereafter, the kernel takes care of all the routing decisions. A monitoring script, mwan3track, runs in the background, running ping to verify that each WAN interface is up. If an interface goes down, mwan3track issues a hotplug event to cause mwan3 to adjust routing tables in response to the interface failure, and to delete all the rules and routes to that interface.
-
-Another component, mwan3rtmon, keeps the main routing table in sync with the interface routing tables by monitoring routing table changes.
-
-Mwan3 is configured when it is started, according to a configuration with the following paragraphs:
-
-  - Global: common configuration spec, used to configure routable loopback address (for OpenWRT 18.06).
-
-  - Interface: defines how each WAN interface is tested for up/down status.
-
-  - Member: represents an interface with a metric and a weight value.
-
-  - Policy: defines how traffic is routed through the different WAN interface(s).
-
-  - Rule: describes what traffic to match and what policy to assign for that traffic.
-
-A SD-WAN CNF will be created with Global and Interface sections initialized based on the interfaces allocated to it. Once the CNF starts, the SD-WAN MWAN3 CNF API can be used to get/create/update/delete an mwan3 rule and policy, on a per member basis.
-
-### Firewall (fw3)
-OpenWrt uses the firewall3 (fw3) netfilter/iptable rule builder application. It runs in user space to parse a configuration file into a set of iptables rules, sending each of the rules to the kernel netfilter modules. The fw3 application is used by OpenWRT to “safely” construct a rule set, while hiding much of the details. The fw3 configuration automatically provides the router with a base set of rules and an understandable configuration file for additional rules.
-
-Similarly to the iptables application, fw3 is based on libiptc library that is used to communicate with the netfilter kernel modules. Both fw3 and iptables applications follow the same steps to apply rules on Netfilter:
-
-  - Establish a socket and read the netfilter table into the application.
-
-  - Modify the chains, rules, etc. in the table (all parsing and error checking is done in user-space by libiptc).
-
-  - Replace the netfilter table in the kernel
-
-fw3 is typically managed by invoking the shell script /etc/init.d/firewall, which accepts the following set of arguments (start, stop, restart, reload, flush). Behind the scenes, /etc/init.d/firewall then calls fw3, passing the supplied argument to the binary. 
-
-OpenWRT firewall is configured when it is started, via a configuration file with the following paragraphs:
-
-  - Default: declares global firewall settings that do not belong to specific zones.
-
-  - Include: used to enable customized firewall scripts.
-
-  - Zone: groups one or more interfaces and serves as a source or destination for forwardings, rules, and redirects.
-
-  - Forwarding: control the traffic between zones.
-
-  - Redirect: defines port forwarding (NAT) rules
-
-  - Rule: defines basic accept, drop, or reject rules to allow or restrict access to specific ports or hosts.
-
-The SD-WAN firewall API provides support to get/create/update/delete Firewall Zone, Redirect, Rule, and Forwardings.
 
 ### IPSec
 The SD-WAN leverages IPSec functionality to setup secure tunnels for  Edge-to-WAN and Edge-WAN-Edge (i.e., to interconnect two edges) communication. The SD-WAN uses the OpenWrt StrongSwan implementation of IPSec. IPsec rules are integrated with the OpenWRT firewall, which enables custom firewall rules. StrongSwan uses the default firewall mechanism to update the firewall rules and injects all the additionally required settings, according to the IPsec configuration stored in /etc/config/ipsec . 
