@@ -52,18 +52,19 @@ The SDEWAN CNF supports deployment at Hub node and Edge node. It has the same fe
 
 
 ## SD-WAN Implementation
-The CERA SD-WAN is based on OpenWrt, an embedded version of Linux designed for use in routers and other communication devices. OpenWrt is highly customizable, allowing it to be deployed with a small footprint, and has a fully-writable filesystem. More details about OpenWRT can be found [here](https://openwrt.org/).
+The CERA SD-WAN is based on FD.io(vpp), an Open Source Terabit Software Dataplane. FD.io is a networking technology that can used to build a galaxy of Network Functions. Today it is being used by a several major communication network providers and equipment manufactures to build world-class network functions. More details about FD.io can be found [here](https://fd.io/).
 
-The OpenWrt project provides a number of kernel images. The “x86-generic rootfs” image is used in the SD-WAN implementation
+The Fast Data Project (FD.io) Universal Dataplane is a collaborative open source project that aims to significantly establish a high-performance IO services framework for dynamic computing environments,so a number of packages of use in implementing SD-WAN functional elements, which are written as FD.io plugins. These include:
 
-The OpenWrt project contains a number of packages of use in implementing SD-WAN functional elements, which are written as OpenWrt applications. These include:
+  - ABF (for Multiple WAN link support) [mwan](https://fd.io/vppproject/vppfeatures/#acl-based-forwarding)
 
-  - mwan3 (for Multiple WAN link support) [mwan](https://openwrt.org/docs/guide-user/network/wan/multiwan/mwan3/)
+  - ACL (for firewall) [fw](https://fd.io/vppproject/vppfeatures/#acls-for-security-groups)
 
-  - firewall3 (for firewall, SNAT, DNAT) [fw3](https://openwrt.org/docs/guide-user/firewall/overview)
+  - NAT (for SNAT,DNAT) [fw](https://fd.io/vppproject/vppfeatures/#network-address-translation)
 
-  - strongswan (for IPsec) [strongswan](https://openwrt.org/docs/guide-user/services/vpn/strongswan/start)
-
+  - IKEv2 (for IKE) [ike](https://fd.io/vppproject/vppfeatures/#ikev2-plugin)
+  
+  - IPSEC (for IPsec) [ipsec](https://fd.io/vppproject/vppfeatures/#ipsec-crypto-engine-provided-by-intel-ipsecmb-library)
 
 These packages support the following functionality:
 
@@ -86,13 +87,13 @@ These packages support the following functionality:
 
 The  SD-WAN implementation uses the following three primary components:
 
-  - SD-WAN Cloud-Native Network Function (CNF) based on OpenWrt packages;
+  - SD-WAN Cloud-Native Network Function (CNF) based on vpp packages;
   
   - Custom Resource Definition (CRD) Controller;
   
   - Custom Resource Definitions (CRD).
 
-The CNF contains the OpenWrt services that perform SD-WANM operations. The CRD Controller and CRDs allow Custom Resources (i.e., extensions to Kubernetes APIs) to be created. Together these components allow information to be sent and received, and commands performed, from the Kubernetes Controller to the SD-WAN.
+The CNF contains the vpp services that perform SD-WAN operations. The CRD Controller and CRDs allow Custom Resources (i.e., extensions to Kubernetes APIs) to be created. Together these components allow information to be sent and received, and commands performed, from the Kubernetes Controller to the SD-WAN.
 
 This behavior is described in the following subsections.
 
