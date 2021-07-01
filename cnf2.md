@@ -98,13 +98,13 @@ The CNF contains the vpp services that perform SD-WAN operations. The CRD Contro
 This behavior is described in the following subsections.
 
 ### SD-WAN CNF
-The SD-WAN CNF is deployed as a pod with external network connections. The CNF runs the mwan, mwan3, and strongswan applications, as described in the previous section. The configuration parameters for the CNF include:
+The SD-WAN CNF is deployed as a pod with external network connections. The CNF runs the Multiple WAN, Firewall, IPsec, and NAT applications, as described in the previous section. The configuration parameters for the CNF include:
 
   - LAN interface configuration – to create and connect virtual, local networks within the edge cluster (local branch) to the CNF.
 
   - WAN interface configuration – to initialize interfaces that connect the CNF and connected LANs to the external Internet - WAN and to initialize the traffic rules (e.g., policy, rules) for the interfaces. The external WAN is also referred to in this document as a provider network.
 
-SD-WAN traffic rules and WAN interfaces are configured at runtime via a RESTful API. The CNF implements the Luci CGI plugin to provide this API. The  API calls are initiated and passed to the CNF by a CRD Controller described in the next paragraph. The  API provides the capability to list available SD-WAN services (e.g., mwan3, firewall, and ipsec), get service status, and execute service operations for adding, viewing, and deleting settings for these services.
+SD-WAN traffic rules and WAN interfaces are configured at runtime via a RESTful API. The CNF implements the RestAPI plugin to provide this API. The API calls are initiated and passed to the CNF by a CRD Controller described in the next paragraph. The API provides the capability to list available SD-WAN services (e.g., Multiple WAN, Firewall, and IPsec), get service status, and execute service operations for adding, viewing, and deleting settings for these services.
 
 ### SD-WAN CRD Controller
 The CRD Controller (also referred to in the implementation as a Config Agent), interacts with the SD-WAN CNF via RESTful API calls. It monitors CRs applied through K8s APIs and translates them into  API calls that carry the CNF configuration to the CNF instance.
