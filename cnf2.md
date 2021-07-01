@@ -60,7 +60,7 @@ The Fast Data Project (FD.io) Universal Dataplane is a collaborative open source
 
   - ACL (for firewall) [fw](https://fd.io/vppproject/vppfeatures/#acls-for-security-groups)
 
-  - NAT (for SNAT,DNAT) [fw](https://fd.io/vppproject/vppfeatures/#network-address-translation)
+  - NAT (for SNAT,DNAT) [nat](https://fd.io/vppproject/vppfeatures/#network-address-translation)
 
   - IKEv2 (for IKE) [ike](https://fd.io/vppproject/vppfeatures/#ikev2-plugin)
   
