@@ -36,14 +36,20 @@ Copyright (c) 2020 Intel Corporation
 - [Terminology](#terminology)
 
 ## Introduction
-With the growth of global organizations, there is an increased need to connect branch offices distributed across the world. As enterprise applications move from corporate data centers to the cloud or the on-premise edge, their branches require secure and reliable, low latency, and affordable connectivity. One way to achieve this is to deploy a wide area network (WAN) over the public Internet, and create secure links to the branches where applications are running.
-The primary role of a traditional WAN is to connect clients to applications hosted anywhere on the Internet. The applications are accessed via public TCP/IP addresses, supported by routing tables on enterprise routers. Branches were also connected to their headquarter data centers via a combination of configurable routers and leased connections. This made WAN connectivty complex and expensive to manage. Additionally, with the move of applications to the cloud and edge, where applications are hosted in private networks without public addresses, accessing these applications requires even more complex rules and policies.
+Software-defined WAN (SD-WAN) introduces a new way to operate a WAN. Firstly,  since it is defined by software, its management can be decoupled from the underlying networking hardware (e.g., routers) and managed in a centralized manner, making it more scalable. Secondly, SD-WAN network functions can now be hosted on Universal Customer Premises Equipment (uCPE), which also host software versions of traditional customer premises equipment. Finally, an SD-WAN can be complemented by edge computing solutions, allowing, for example, latency-sensitive traffic to be steered to edge nodes for local processing, and to allow uCPE functions to be hosted in edge nodes. 
 
+There co-exist two SDEWAN (Software-defined edge WAN) solutions in OpenNESS:
+•	one is OpenWrt based solution that was added with OpenNESS 20.12 release
+•	the other is VPP/DPDK based solution with high-performance featured leveraging user space network stack.
 
-Software-defined WAN (SD-WAN) introduces a new way to operate a WAN. First of all, because it is defined by software, its management can be decoupled from the underlying networking hardware (e.g., routers) and managed in a centralized manner, making it more scalable. Secondly, SD-WAN network functions can now be hosted on Universal Customer Premises Equipment (uCPE), which also host software versions of traditional customer premises equipment.  Finally, an SD-WAN can be complemented by edge computing solutions, allowing, for example, latency-sensitive traffic to be steered to edge nodes for local processing, and to allow uCPE functions to be hosted in edge nodes.
+This design document targets the latter only.            
+Both solutions provide support for similar SDEWAN services and similar deployments. Mixed deployment will be supported for some scenarios. 
+![Figure-1 ](sdwan-images/sdewan-topo.png)
 
+According to Figure-1, in Enterprise Network scenario, the SDEWAN of hub node is defined as a gateway of all branch networks, so high-performance VPP is needed at hub node. For example, an OpenWrt based solution is deployed on edge nodes, while high-performance VPP based solution works on traffic hub nodes that work as bridge among edge nodes. 
+ 
+The SDEWAN CNF supports deployment at Hub node and Edge node. It has the same features either in Hub or Edge node. 
 
-This paper describes how the Open Network Edge Services Software (OpenNESS) integrates uCPE features and SD-WAN capabilities to create  for edge optimization, and how it leverages SD-WAN functionality to allow edge-to-edge communication via a WAN.
 
 ## SD-WAN Implementation
 The CERA SD-WAN is based on OpenWrt, an embedded version of Linux designed for use in routers and other communication devices. OpenWrt is highly customizable, allowing it to be deployed with a small footprint, and has a fully-writable filesystem. More details about OpenWRT can be found [here](https://openwrt.org/).
