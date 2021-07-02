@@ -111,11 +111,11 @@ The CRD Controller (also referred to in the implementation as a Config Agent), i
 
 the CRD Controller includes several functions:
 
-  - Mwan3conf Controller, to monitor the Mwan3Conf CR;
+  - MWAN Controller, to monitor the Multiple WAN CR;
 
-  - FirewallConf Controller, to monitor the FirewallConf CR;
+  - FW Controller, to monitor the Firewall and NAT CR;
 
-  - IPSec Controller, to monitor the IPsec CRs.
+  - IPsec Controller, to monitor the IPsec and IKE CRs.
 
 
 ### Custom Resources (CRs)
@@ -125,13 +125,13 @@ In order to set these rules externally, CRs are defined to allow rules to be tra
 
 The types of rules supported by the CRs are: 
 
-  - Mwan3 class, with 2 subclasses, mwan3_policy and mwan3_rule. 
+  - Multipule WAN class, with 2 subclasses, mwan3_policy and mwan3_rule. 
 
   - The firewall class has 5 kinds of rules: firewall_zone, firewall_snat, firewall_dnat, firewall_forwarding, firewall_rule.  
 
   - IPsec class.
   
-  The rules are defined by the OpenWrt services, and can be found in the OpenWrt documentation, e.g., [here](https://openwrt.org/docs/guide-user/network/wan/multiwan/mwan3).
+  The rules are defined by the OpenWrt services and compatibled with it, and can be found in the OpenWrt documentation, e.g., [here](https://openwrt.org/docs/guide-user/network/wan/multiwan/mwan3).
   
   Each kind of SD-WAN rule corresponds to a CRD, which are used to instantiate the CRs.
 
