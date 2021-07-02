@@ -160,7 +160,7 @@ The following figure shows the typical packet flow through the SD-WAN CNF for Tx
 
 ![SD-WAN Tx packet flow ](sdwan-images/packet-flow-tx2.png)
 
-## OpenNESS Integration
+## OpenNESS Integration [- next half, need update]
 The previous sections of this document describe the operation of an SD-WAN implemention built from OpenWrt and its various packages. We now turn to the subject of how the SD-WAN is integrated with OpenNESS.
 
 ### Goals
