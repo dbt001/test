@@ -64,11 +64,11 @@ The Fast Data Project (FD.io) Universal Dataplane is a collaborative open source
 
   - IKEv2 (for IKE) [ike](https://fd.io/vppproject/vppfeatures/#ikev2-plugin)
   
-  - IPSEC (for IPsec) [ipsec](https://fd.io/vppproject/vppfeatures/#ipsec-crypto-engine-provided-by-intel-ipsecmb-library)
+  - IPSEC (for IPSec) [ipsec](https://fd.io/vppproject/vppfeatures/#ipsec-crypto-engine-provided-by-intel-ipsecmb-library)
 
 These packages support the following functionality:
 
-  - IPsec tunnels across K8s clusters;  
+  - IPSec tunnels across K8s clusters;  
      
   - Support of multiple types of K8s clusters: 
   
@@ -98,13 +98,13 @@ The CNF contains the vpp services that perform SD-WAN operations. The CRD Contro
 This behavior is described in the following subsections.
 
 ### SD-WAN CNF
-The SD-WAN CNF is deployed as a pod with external network connections. The CNF runs the Multiple WAN, Firewall, IPsec, and NAT applications, as described in the previous section. The configuration parameters for the CNF include:
+The SD-WAN CNF is deployed as a pod with external network connections. The CNF runs the Multiple WAN, Firewall, IPSec, and NAT applications, as described in the previous section. The configuration parameters for the CNF include:
 
   - LAN interface configuration – to create and connect virtual, local networks within the edge cluster (local branch) to the CNF.
 
   - WAN interface configuration – to initialize interfaces that connect the CNF and connected LANs to the external Internet - WAN and to initialize the traffic rules (e.g., policy, rules) for the interfaces. The external WAN is also referred to in this document as a provider network.
 
-SD-WAN traffic rules and WAN interfaces are configured at runtime via a RESTful API. The CNF implements the RestAPI plugin to provide this API. The API calls are initiated and passed to the CNF by a CRD Controller described in the next paragraph. The API provides the capability to list available SD-WAN services (e.g., Multiple WAN, Firewall, and IPsec), get service status, and execute service operations for adding, viewing, and deleting settings for these services.
+SD-WAN traffic rules and WAN interfaces are configured at runtime via a RESTful API. The CNF implements the RestAPI plugin to provide this API. The API calls are initiated and passed to the CNF by a CRD Controller described in the next paragraph. The API provides the capability to list available SD-WAN services (e.g., Multiple WAN, Firewall, and IPSec), get service status, and execute service operations for adding, viewing, and deleting settings for these services.
 
 ### SD-WAN CRD Controller
 The CRD Controller (also referred to in the implementation as a Config Agent), interacts with the SD-WAN CNF via RESTful API calls. It monitors CRs applied through K8s APIs and translates them into  API calls that carry the CNF configuration to the CNF instance.
@@ -115,7 +115,7 @@ the CRD Controller includes several functions:
 
   - FW Controller, to monitor the Firewall and NAT CR;
 
-  - IPsec Controller, to monitor the IPsec and IKE CRs.
+  - IPSec Controller, to monitor the IPSec and IKE CRs.
 
 
 ### Custom Resources (CRs)
@@ -129,7 +129,7 @@ The types of rules supported by the CRs are:
 
   - The firewall class has 5 kinds of rules: firewall_zone, firewall_snat, firewall_dnat, firewall_forwarding, firewall_rule.  
 
-  - IPsec class.
+  - IPSec class.
   
   The rules are defined by the OpenWrt services and compatibled with it, and can be found in the OpenWrt documentation, e.g., [here](https://openwrt.org/docs/guide-user/network/wan/multiwan/mwan3).
   
@@ -139,10 +139,10 @@ In a Kubernetes namespace, with more than one CNF deployment and many SD-WAN rul
 
 ## CNF Configuration via CRs
 
-As explained earlier, the SD-WAN CNF contains a collection of services, implemented by OpenWRT packages. In this section, the services are described in greater detail.
+As explained earlier, the SD-WAN CNF contains a collection of services, implemented by vpp plugins. In this section, the services are described in greater detail.
 
 ### IPSec
-The SD-WAN leverages IPSec functionality to setup secure tunnels for  Edge-to-WAN and Edge-WAN-Edge (i.e., to interconnect two edges) communication. The SD-WAN uses the OpenWrt StrongSwan implementation of IPSec. IPsec rules are integrated with the OpenWRT firewall, which enables custom firewall rules. StrongSwan uses the default firewall mechanism to update the firewall rules and injects all the additionally required settings, according to the IPsec configuration stored in /etc/config/ipsec . 
+The SD-WAN leverages IPSec functionality to setup secure tunnels for  Edge-to-WAN and Edge-WAN-Edge (i.e., to interconnect two edges) communication. The SD-WAN uses the vpp IPSec crypto plugin implementation of IPSec. IPsec rules are integrated with the firewall, which enables custom firewall rules. vpp uses the default firewall mechanism to update the firewall rules and injects all the additionally required settings, according to the IPsec configuration from CRD Controller . 
 
 The SD-WAN configures the IPSec site-to-site tunnels to connect edge networks through a hub located in the external network. The hub is a server that acts as a proxy between pairs of edges.  The hub also runs SD-WAN CRD Controller and CNF configured such that it knows how to access SD-WAN CNFs deployed on both edges.  In that case, to create the IPsec tunnel, the WAN interface on the edge is treated as one side of the tunnel, and the connected  WAN interface on the hub is configured as the "responder". Both edges are configured as "initiator".
 
