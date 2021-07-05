@@ -160,8 +160,8 @@ The following figure shows the typical packet flow through the SD-WAN CNF for Tx
 
 ![SD-WAN Tx packet flow ](sdwan-images/packet-flow-tx2.png)
 
-## OpenNESS Integration [- next half, need update]
-The previous sections of this document describe the operation of an SD-WAN implemention built from OpenWrt and its various packages. We now turn to the subject of how the SD-WAN is integrated with OpenNESS.
+## OpenNESS Integration
+The previous sections of this document describe the operation of an SD-WAN implemention built from vpp and its various plugins. We now turn to the subject of how the SD-WAN is integrated with OpenNESS.
 
 ### Goals
 OpenNESS leverages the SD-WAN project to offer SD-WAN service within an on-premise edge, to enable secure and optimized inter-edge data transfer. This functionality is sought by global corporations with  branch offices distributed across many geographical locations, as it creates an optimized WAN between edge locations implemented on top of a public network.
@@ -186,7 +186,8 @@ The [ovn4nfv-k8s-plugin](https://github.com/opnfv/ovn4nfv-k8s-plugin) is a CNI p
 In order for the SD-WAN CNF to act as a proxy between the virtual LANs in the cluster and the WAN, it needs to have  two types of network interfaces configured:
 
  -  A virtual LAN network on one of the CNF's virtual interfaces. This connects  application pods belonging to the same OVN network in the cluster. The ovn4nfv plugin allows for simplified creation of a virtual OVN network based on the provided configuration. The network is then attached on one of the CNF's interfaces.
- -  A provider network, to connect the CNF pod to an external network (WAN). The provider network is attached to the physical network infrastructure via layer-2 (i.e., via bridging/switching).
+ -  A Enterprise network, to connect the CNF pod to an Enterprise LAN network. The Enterprise network is attached to the physical network infrastructure which is takeovered by vpp.
+ -  A provider network, to connect the CNF pod to an external network (WAN). The provider network is also attached to the physical network infrastructure which is takeovered by vpp.
 
 ### Converged Edge Reference Architectures (CERA)
 CERA is a business program that creates and maintains validated reference architectures of edge networks, including both hardware and software elements. The reference architectures are used by ISVs, system integrators, and others to accelerate the development of production edge computing systems.
@@ -219,7 +220,7 @@ The following figure shows the system architecture of the SD-WAN Hub Reference A
 
 ![OpenNESS SD-WAN Hub Architecture ](sdwan-images/sdwan-hub-arch2.png)
 
-## Deployment
+## Deployment [- next half, need update]
 ### E2E Scenarios
 Three end-to-end scenarios have been validated to verify deployment of an SD-WAN on OpenNESS. The three scenarios are described in the following sections of this document. 
 
