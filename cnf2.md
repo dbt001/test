@@ -201,7 +201,7 @@ To minimalize resource consumption by the cluster, SD-WAN Edge disables services
 
 The following figure shows the system architecture of the SD-WAN Edge Reference Architecture.
 
-![OpenNESS SD-WAN Edge Architecture ](sdwan-images/sdwan-edge-arch.png)
+![OpenNESS SD-WAN Edge Architecture ](sdwan-images/sdwan-edge-arch2.png)
 
 
 #### SD-WAN Hub Reference Architecture
@@ -217,7 +217,7 @@ The Hub node has two expected use-cases:
 
 The following figure shows the system architecture of the SD-WAN Hub Reference Architecture.
 
-![OpenNESS SD-WAN Hub Architecture ](sdwan-images/sdwan-hub-arch.png)
+![OpenNESS SD-WAN Hub Architecture ](sdwan-images/sdwan-hub-arch2.png)
 
 ## Deployment
 ### E2E Scenarios
