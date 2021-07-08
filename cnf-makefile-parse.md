@@ -1,4 +1,5 @@
 1. build-base 制作编译docker(centos)
+- [ ] 
     A. `docker build --build-arg IDOEWODOCKERREPO=${IDOEWODOCKERREPO} --build-arg HTTP_PROXY=${HTTP_PROXY} \
 	--build-arg HTTPS_PROXY=${HTTPS_PROXY} --build-arg CNFVPP_WORK_ENV_OS_NAME=${CNFVPP_WORK_ENV_OS_NAME} \
 	--build-arg CNFVPP_WORK_ENV_OS_VERSION=${CNFVPP_WORK_ENV_OS_VERSION} --rm -t ${CNFVPP_BUILD_BASE_IMAGE_NAME} \
