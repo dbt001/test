@@ -1,8 +1,8 @@
 1. build-base 制作编译docker(centos)
-    A. docker build --build-arg IDOEWODOCKERREPO=${IDOEWODOCKERREPO} --build-arg HTTP_PROXY=${HTTP_PROXY} \
+    A. `docker build --build-arg IDOEWODOCKERREPO=${IDOEWODOCKERREPO} --build-arg HTTP_PROXY=${HTTP_PROXY} \
 	--build-arg HTTPS_PROXY=${HTTPS_PROXY} --build-arg CNFVPP_WORK_ENV_OS_NAME=${CNFVPP_WORK_ENV_OS_NAME} \
 	--build-arg CNFVPP_WORK_ENV_OS_VERSION=${CNFVPP_WORK_ENV_OS_VERSION} --rm -t ${CNFVPP_BUILD_BASE_IMAGE_NAME} \
-	-f ${CNFVPPROOT}/build/Dockerfile.${CNFVPP_WORK_ENV_OS_NAME}${CNFVPP_WORK_ENV_OS_VERSION}.cnf-vpp.build-base ./
+	-f ${CNFVPPROOT}/build/Dockerfile.${CNFVPP_WORK_ENV_OS_NAME}${CNFVPP_WORK_ENV_OS_VERSION}.cnf-vpp.build-base ./`
     _使用docker file创建docker image,并同时生成EVL参数供程序运行使用_
 
     B. push_container.sh ${IDOEWODOCKERREPO} ${CNFVPP_BUILD_BASE_IMAGE_NAME} ${CNFVPP_BUILD_BASE_IMAGE_VERSION}
