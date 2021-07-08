@@ -13,10 +13,10 @@
 	--env XDG_CACHE_HOME=/tmp/.cache -v ${IDOEWOROOT}:/opt/ido-ewo/ -dit \
 	${IDOEWODOCKERREPO}${CNFVPP_BUILD_BASE_IMAGE_NAME}:${CNFVPP_BUILD_BASE_IMAGE_VERSION} /bin/sh  
     _将第1步制作的docker(centos)启动，并将当前Host源码目录挂载到Guest /opt/ido-ewo目录下_  
-    B. ocker exec ${CNFVPP_BUILD_BASE_IMAGE_NAME}-${CNFVPP_BUILD_BASE_IMAGE_VERSION} /bin/sh -c \
+* docker exec ${CNFVPP_BUILD_BASE_IMAGE_NAME}-${CNFVPP_BUILD_BASE_IMAGE_VERSION} /bin/sh -c \
 	"cd /opt/ido-ewo/platform/cnf-vpp;make -C src install-dep;make -C src pkg"  
     _在guest中调用make命令，即VPP相关依赖安装和编译，生成pkg包,此步骤同时包含VPP集成组件的编译，如sweetcomb/RestAPI等_  
-    C. cp ${CNFVPPROOT}/src/sweetcomb/${PKG}/*.${PKG} ${CNFVPPROOT}/src/vpp/vpp-20.09/build-root/*vpp*.${PKG} \
+* cp ${CNFVPPROOT}/src/sweetcomb/${PKG}/*.${PKG} ${CNFVPPROOT}/src/vpp/vpp-20.09/build-root/*vpp*.${PKG} \
 	${CNFVPPROOT}/src/sweetcomb/build-root/build/sweetcomb*.${PKG} ${CNFVPPROOT}/build/packages  
     _将编译结果拷贝至Host build/packages目录_  
 ### service-base 制作发布的docker应用（依赖于编译出的deb/rpm包）
