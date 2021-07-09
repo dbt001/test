@@ -21,7 +21,15 @@
 	sudo ${INSTALL} git wget patch
 	make -C vpp $@
 	make -C sweetcomb $@
-  
+	_分别进行VPP和Sweetcomb编译，如下为VPP编译，通过从FDIO官网下载指定版本，并打上功能补丁后编译_
+	rm -rf vpp-$(VERSION) v$(VERSION).tar.gz
+	git config --global user.name dummy
+	git config --global user.email dummy@example.com
+	./patch_vpp-$(VERSION).sh
+	git add vpp-$(VERSION)/*
+	git commit -a -m "To do the commit locally but not to push only as a workaround to make vpp build system happy"
+	make -C vpp-$(VERSION) UNATTENDED=yes $@
+
 3. cp ${CNFVPPROOT}/src/sweetcomb/${PKG}/*.${PKG} ${CNFVPPROOT}/src/vpp/vpp-20.09/build-root/*vpp*.${PKG} \
 	${CNFVPPROOT}/src/sweetcomb/build-root/build/sweetcomb*.${PKG} ${CNFVPPROOT}/build/packages  
     _将编译结果拷贝至Host build/packages目录_  
