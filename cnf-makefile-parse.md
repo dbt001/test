@@ -88,9 +88,9 @@ testapi-chart
 │   └── service.yaml
 └── values.yaml
 ```
-	_相关的Helm 介绍,参见 https://zhaohuabing.com/2018/04/16/using-helm-to-deploy-to-kubernetes/_
+_相关的Helm 介绍,参见 https://zhaohuabing.com/2018/04/16/using-helm-to-deploy-to-kubernetes/_
 
-	_Helm install采用本地helm包./deployments/helm的方式运行sdewan，上述命令中,-set 同步指定运行的docker image, 其它参数由helm values.yaml替换，values.yaml定义如下_
+_Helm install采用本地helm包./deployments/helm的方式运行sdewan（由于未采用仓库管理方式，故此条命令需要在K8S Master上执行），上述命令中,-set 同步指定运行的docker image, 其它参数由helm values.yaml替换，values.yaml定义如下_
 ```
 devs:
   - 0000:06:00.0
@@ -128,4 +128,4 @@ cpu:
   corelist_workers: 2-3,6-7
 
 ```
-	_其中关键所需的变量参数都已定义出来，Helm会自动将templates中的所有yaml中用到的上述变量进行规换，并在install时，将Helm包上传至K8S API Server运行，K8S运行相关yaml资源时，这些参数已被替换_
+_其中关键所需的变量参数都已定义出来，Helm会自动将templates中的所有yaml中用到的上述变量进行规换，并在install时，将Helm包上传至K8S API Server运行，K8S运行相关yaml资源时，这些参数已被替换_
