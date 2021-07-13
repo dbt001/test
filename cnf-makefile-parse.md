@@ -76,7 +76,7 @@ deploy: check-env docker-reg
 	@echo "    Done."
  
 ```
-	_Helm 包格式如下_
+_Helm 包格式如下_
 ```
 testapi-chart
 ├── charts
