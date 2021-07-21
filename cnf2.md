@@ -39,11 +39,10 @@ Copyright (c) 2020 Intel Corporation
 Software-defined WAN (SD-WAN) introduces a new way to operate a WAN. Firstly,  since it is defined by software, its management can be decoupled from the underlying networking hardware (e.g., routers) and managed in a centralized manner, making it more scalable. Secondly, SD-WAN network functions can now be hosted on Universal Customer Premises Equipment (uCPE), which also host software versions of traditional customer premises equipment. Finally, an SD-WAN can be complemented by edge computing solutions, allowing, for example, latency-sensitive traffic to be steered to edge nodes for local processing, and to allow uCPE functions to be hosted in edge nodes. 
 
 There co-exist two SDEWAN (Software-defined edge WAN) solutions in OpenNESS:
-  - one is OpenWrt based solution that was added with OpenNESS 20.12 release
+  - one is OpenWrt based solution that was added with OpenNESS 20.12 release [here](https://github.com/otcshare/ido-specs/blob/master/doc/reference-architectures/cera_sdwan.md)
   - the other is VPP/DPDK based solution with high-performance featured leveraging user space network stack.
 
-This design document targets the latter only.            
-Both solutions provide support for similar SDEWAN services and similar deployments. Mixed deployment will be supported for some scenarios. 
+This document targets the latter only and here is the high-level topo.            
 ![Figure-1 ](sdwan-images/sdewan-topo.png)
 
 According to Figure-1, in Enterprise Network scenario, the SDEWAN of hub node is defined as a gateway of all branch networks, so high-performance VPP is needed at hub node. For example, an OpenWrt based solution is deployed on edge nodes, while high-performance VPP based solution works on traffic hub nodes that work as bridge among edge nodes. 
