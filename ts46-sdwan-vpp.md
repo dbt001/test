@@ -48,7 +48,7 @@ Copyright © 2021 Intel Corporation
 	
 **Test Suite Topology Overview**:
 
-![Topology Overview](ts_resources/images/itp_ned_46_01.png)
+![Topology Overview](sdwan-images/itp_ned_46_01.png)
 
 ## ITP/NED/46/01: Scenario A:Using Flavor to deploy on Edge Node
 
