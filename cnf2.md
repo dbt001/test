@@ -254,11 +254,9 @@ Four end-to-end scenarios have been validated to verify deployment of an SD-WAN 
 
 #### Scenario 1
 
-In this scenario, two UEs are connected to two separate edge nodes, which are connected to one common hub. The scenario demonstrates basic connectivity accross the edge clusters via the SD-WAN. The traffic flow is initiated on one UE and received on the other UE.  
+场景1用于验证使用Flavor的方式成功在Edge Node部署SDEWAN CNF.  
 
-For this scenario, OpenNESS is deployed on both edges and on the hub. On each edge and hub, an SD-WAN CRD Controller and a CNF are set up. Then CRs are used to configre the CNFs and to set up IPsec tunnels between each edge and the hub, and to configure rules on the WAN interfaces connecting edges with the hub. Each CNF is connected to two provider networks. The CNFs on Edge 1 and Edge 2 use provider network n2 to connect to UEs outside the Edge, and the provider network n3 to connect the hub in another edge location. Currently, the UE connects to the CNF directly without the switch. In the following figure, UE1 is in the same network(NET1) as Edge1 port. It is considered a private network.
-
-This scenario verifies that sample traffic can be sent from the UE connected to Edge2 to another UE connected to Edge1 over secure WAN links connecting the edges to a hub. To demonstrate this connectivity, traffic from the Iperf-client application running on the Edge2 UE is sent toward the Edge1 UE running the Iperf server application.
+在这个场景中，OpenNESS Edge Node采用单节点集成方式运行，SDEWAN CNF将以POD的方式运行在OpenNESS Edge Node，同时将对SDEWAN CNF配置WAN接口，验证SDEWAN POD成功运行，并获取到IP地址.
 
 The Edge1 node also deploys an OpenVINO app, and, in this way, this scenario also demonstrates Scenario 3 described below.
 
