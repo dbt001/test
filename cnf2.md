@@ -219,32 +219,36 @@ The following figure shows the system architecture of the SD-WAN Hub Reference A
 
 ![OpenNESS SD-WAN Hub Architecture ](sdwan-images/sdwan-hub-arch2.png)
 
-## Deployment [- next half, need update]
+## Deployment
 ### E2E Scenarios
-Three end-to-end scenarios have been validated to verify deployment of an SD-WAN on OpenNESS. The three scenarios are described in the following sections of this document. 
+Four end-to-end scenarios have been validated to verify deployment of an SD-WAN on OpenNESS. The four scenarios are described in the following sections of this document. 
 
 #### Hardware Specification
+- Three physical servers for two single-node sdewan edge clusters and one single-node sdewan hub cluster.
+- Xeon (D-2145NT): 1 Core 2 HT, 2G DDR (1G DDR as stretch goal) 
+- CPU:
+  - _Intel(R) Xeon(R) D-2145NT CPU @ 1.90GHz @8 cores 16 threads_ 
+- Memory:
+  - _Total 64G DDR4 (16Gx4)_
+- NICs:
+  - _Intel Corporation Ethernet Connection X722 for 10GbE SFP+_
+  - _Intel Corporation Ethernet Controller X710 for 10GbE SFP+_
+  - _Intel Corporation I350 Gigabit Network Connection_
 
-The following table describes the hardware requirements of the scenarios. 
+#### Software Specification
 
-| Hardware |                        | UE                                 | Edge & Hub                           |
-| ---------|----------------------- | ---------------------------------- | ------------------------------------ |
-| CPU      | Model name:            |  Intel(R) Xeon(R)                  | Intel(R) Xeon(R) D-2145NT            |     
-|          |                        |  CPU E5-2658 v3 @ 2.20GHz          | CPU @ 1.90GHz                        |
-|          | CPU MHz:               |  1478.527                          | CPU MHz: 1900.000                    |
-|          | L1d cache:             |  32K                               | 32K                                  | 
-|          | L1i cache:             |  32K                               | 32K                                  |
-|          | L2 cache:              |  256K                              | 1024K                                |
-|          | L3 cache:              |  30720K                            | 1126K                                |
-|          | NUMA node0 CPU(s):     |  0-11                              | 0-15                                 |
-|          | NUMA node1 CPU(s):     |  12-23                             |                                      |
-| NIC      | Ethernet controller:   | Intel Corporation                  | Intel Corporation                    |
-|          |                        | 82599ES 10-Gigabit                 | Ethernet Connection                  |
-|          |                        | SFI/SFP+ Network Connection        | X722 for 10GbE SFP+                  |
-|          |                        | (rev 01)                           | Subsystem: Advantech Co. Ltd         |
-|          |                        | Subsystem: Intel Corporation       | Device 301d                          |
-|          |                        | Ethernet Server Adapter X520-2     |                                      |
-| HDDL     |                        |                                    |                                      |
+- Host Operating System
+  - _ubuntu 20.04_
+- Host Linux Kernel
+  - _5.4.0-77-generic_
+- BIOS VT-d Configuration
+  - _Enable_
+- Boot settings
+  - _iommu=pt intel_iommu=on_
+	
+#### Test Suite Topology Overview
+
+![Topology Overview](sdwan-images/itp_ned_46_01.png)
 
 #### Scenario 1
 
