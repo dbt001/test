@@ -258,11 +258,9 @@ Four end-to-end scenarios have been validated to verify deployment of an SD-WAN 
 
 在这个场景中，OpenNESS Edge Node采用单节点集成方式运行，SDEWAN CNF将以POD的方式运行在OpenNESS Edge Node，同时将对SDEWAN CNF配置WAN接口，验证SDEWAN POD成功运行，并获取到IP地址.
 
-The Edge1 node also deploys an OpenVINO app, and, in this way, this scenario also demonstrates Scenario 3 described below.
+![OpenNESS SD-WAN Scenario 1 ](sdwan-images/sdewan-vpp-scenario1.png)
 
-![OpenNESS SD-WAN Scenario 1 ](sdwan-images/e2e-scenario1.png)
-
-A more detailed description of this E2E test is provided under the link in the OpenNESS documentation for this SD-WAN [scenario](https://github.com/otcshare/edgeapps/blob/master/network-functions/sdewan_cnf/e2e-scenarios/three-single-node-clusters/E2E-Overview.md).
+A more detailed description of this E2E test is provided under the link in the OpenNESS documentation for this SD-WAN [scenario](https://github.com/otcshare/x-test/blob/br_tieto_pr_test_plan/test_plans/ned/integration/ts46-sdwan-vpp.md).
 
 #### Scenario 2
 This scenario demonstrates an simple OpenNESS SD-WAN with a single node cluster, that deploys an SD-WAN CNF and an application pod running an Iperf client. The scenario is depicted in the following figure.
