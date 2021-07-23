@@ -379,13 +379,118 @@ A more detailed description of this E2E test is provided under the link in the O
 	 ```
 
 #### Scenario 2
-This scenario demonstrates an simple OpenNESS SD-WAN with a single node cluster, that deploys an SD-WAN CNF and an application pod running an Iperf client. The scenario is depicted in the following figure.
+场景2用于验证使用Flavor的方式成功在Hub Node部署SDEWAN CNF.  
 
-The CNF pod and Iperf-client pod are attached to one virtual OVN network, using the n3 and n0 interfaces respectively. The CNF has configured a provider network on interface n2, that is attached to a physical interface on the Edge node to work as a bridge, to connect the external network. This scenario demonstrates that, after configuration of the CNF, the traffic sent from the application pod uses the SD-WAN CNF as a proxy, and arrives at the User Equipment (UE) in the external network. The E2E traffic from the Iperf3 client application on the application pod (which is deployed on the Edge node) travels to the external UE via a 10G NIC port. The UE runs the Iperf3 server application. The OpenNESS cluster, consisting of the Edge Node server,  is deployed on the SD-WAN Edge. The Iperf client traffic is expected to pass through the SD-WAN CNF and the attached provider network interface to reach the Iperf server that is listening on the UE.
+在这个场景中，OpenNESS Edge Node采用单节点集成方式运行，SDEWAN CNF将以POD的方式运行在OpenNESS Hub Node，同时将对SDEWAN CNF配置WAN接口，验证SDEWAN POD成功运行，并获取到IP地址.
 
-A more detailed description of the scenarion can be found in this SD-WAN scenario [documentation](https://github.com/otcshare/edgeapps/blob/master/network-functions/sdewan_cnf/e2e-scenarios/one-single-node-cluster/README.md)
+![OpenNESS SD-WAN Scenario 2 ](sdwan-images/sdewan-vpp-scenario1.png)
 
-![OpenNESS SD-WAN Scenario 2 ](sdwan-images/e2e-scenario2.png)
+A more detailed description of this E2E test is provided under the link in the OpenNESS documentation for this SD-WAN [scenario](https://github.com/otcshare/x-test/blob/br_tieto_pr_test_plan/test_plans/ned/integration/ts46-sdwan-vpp.md).
+
+##### Prerequisites
+
+1. Ubuntu OS is installed sucessfully.
+2. `otcshare/ido-converged-edge-experience-kits` checked out on all edge and hub servers.
+3. use command `git submodule init` and `git submodule update` checkout `ceek` folder.
+4. SSH key generated & copied for the remote server.
+5. configure `ansible_host` and `ansible_user` for `controller_group` and `edgenode_group` in `inventory.yml` file under `/ido-converged-edge-experience-kits/`.
+6. set proper proxy for all nodes.
+
+##### Test Steps
+
+1. deploy SDEWAN CNF on hub node using flavor. 
+2. Modify Pre-defined configuration File：
+	```yaml
+	to add configuration details here
+	``` 
+3. Modify _flavors/sdwan/all.yml_  for	sdewan cnf(vpp) hub deployment：
+	```yaml
+	to add configuration details here
+	``` 
+4. Modify _inventory.yml (falvor: sdwan)_
+	```yaml
+	to add configuration details here
+	```		
+5. run _`./deploy.py`_ and wait till it ends successfully.
+6. Check the node result:
+   - Execute:
+	 ```shell
+	 root@ceekvpp:~# kubectl get nodes
+	 ```
+   - Example output:
+	 ```
+	 NAME	   STATUS	ROLES				   AGE	  VERSION
+	 ceekvpp   Ready	control-plane,master   3d1h	  v1.20.0
+	 ```
+7. Check the pods(sdewan,sdewan-crd-controller,harbor,calico...) status:
+   - Execute:
+	 ```shell
+	 root@ceekvpp:~# kubectl get po -A
+	 ```
+   - Example output:
+	 ```
+	 NAMESPACE       NAME                                               READY   STATUS    RESTARTS   AGE
+     cert-manager    cert-manager-5597cff495-dcmvm                      1/1     Running   0          24h
+     cert-manager    cert-manager-cainjector-bd5f9c764-8rdms            1/1     Running   0          24h
+     cert-manager    cert-manager-webhook-5f57f59fbc-wgnsr              1/1     Running   0          24h
+     default         sdewan-9cd4c5c8c-8c886                             2/2     Running   0          20h
+     harbor          harbor-app-harbor-chartmuseum-685569858b-w8wc9     1/1     Running   0          3d1h
+     harbor          harbor-app-harbor-clair-779df4555b-ftfjc           2/2     Running   440        3d1h
+     harbor          harbor-app-harbor-core-57fdf4d4-pc28q              1/1     Running   0          3d1h
+     harbor          harbor-app-harbor-database-0                       1/1     Running   0          3d1h
+     harbor          harbor-app-harbor-jobservice-994696fc8-bkspf       1/1     Running   2          3d1h
+     harbor          harbor-app-harbor-nginx-7ff49cf9c4-f6cfn           1/1     Running   0          3d1h
+     harbor          harbor-app-harbor-notary-server-b4bb8f78b-xcwmv    1/1     Running   3          3d1h
+     harbor          harbor-app-harbor-notary-signer-8485f97c8c-rkwx6   1/1     Running   4          3d1h
+     harbor          harbor-app-harbor-portal-fd5ff4bc9-tq55c           1/1     Running   0          3d1h
+     harbor          harbor-app-harbor-redis-0                          1/1     Running   0          3d1h
+     harbor          harbor-app-harbor-registry-656b744d74-qppxx        2/2     Running   0          3d1h
+     harbor          harbor-app-harbor-trivy-0                          1/1     Running   0          3d1h
+     kube-system     calico-kube-controllers-856cdfb67c-67hdt           1/1     Running   0          3d1h
+     kube-system     calico-node-59jxf                                  1/1     Running   0          3d1h
+     kube-system     coredns-74ff55c5b-4zkcm                            1/1     Running   0          3d1h
+     kube-system     coredns-74ff55c5b-fp4l8                            1/1     Running   0          3d1h
+     kube-system     etcd-ceekvpp                                       1/1     Running   0          3d1h
+     kube-system     kube-apiserver-ceekvpp                             1/1     Running   0          3d1h
+     kube-system     kube-controller-manager-ceekvpp                    1/1     Running   0          3d1h
+     kube-system     kube-proxy-nfw5x                                   1/1     Running   0          3d1h
+     kube-system     kube-scheduler-ceekvpp                             1/1     Running   0          3d1h
+     sdewan-system   sdewan-crd-controller-5bbcfc6875-jqg4m             2/2     Running   0          21h
+	 ```
+8. Check the reference volumes special "cnf-default-cert" and “cnf-default-auth” have been mounted into cnf pod:
+   - Execute:
+	 ```shell
+     root@ceekvpp:~# kubectl get pod
+     NAME                     READY   STATUS    RESTARTS   AGE
+     sdewan-9cd4c5c8c-8c886   2/2     Running   0          20h
+     root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- ll /etc/crd-ctrlr-adpt/cert
+     root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- ll /etc/crd-ctrlr-adpt/auth
+	 ```
+   - Example output:
+	 ```
+     The directories cert and auth are existing.
+	 ``` 
+9. Check the interface address result inside cnf pod:
+   - Execute:
+	 ```shell
+     root@ceekvpp:~# kubectl get pod
+     NAME                     READY   STATUS    RESTARTS   AGE
+     sdewan-9cd4c5c8c-8c886   2/2     Running   0          20h
+	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh int addr
+	 ```
+   - Example output:
+	 ```
+     GigabitEthernet66/0/1 (up):
+       L2 bridge bd-id 1 idx 1 shg 0
+     GigabitEthernet66/0/2 (up):
+       L3 192.168.1.194/24 ip4 table-id 1 fib-idx 1
+     local0 (dn):
+     loop0 (up):
+       L2 bridge bd-id 1 idx 1 shg 0 bvi
+       L3 172.30.10.1/24
+     tap0 (up):
+       L2 bridge bd-id 1 idx 1 shg 0
+	 ```
 
 
 #### Scenario 3
