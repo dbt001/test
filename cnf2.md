@@ -498,10 +498,6 @@ A more detailed description of this E2E test is provided under the link in the O
 
 ![OpenNESS SD-WAN Scenario 3 ](sdwan-images/sdewan-vpp-scenario3.png)
 
-##### Test Summary 
-
-> Configing IPSec on Overlay Controller->CRD Controller->SDEWAN CNF
-
 ##### Prerequisites
 
 1. scenario A and B are successful.
@@ -559,9 +555,77 @@ A more detailed description of this E2E test is provided under the link in the O
 	 ``` 
 
 #### Scenario 4
-场景3在场景1，场景2的基础上进一步验证Overlay network的配置，需要同时在Hub cluster和Edge cluster中部署SDEWAN CNF，并使能IKEv2和IPsec功能。
+场景4在场景3的基础上进一步验证Overlay network的数据流量通路，采用Hub-Spoke组网模型，需要同时在Hub cluster和两个Edge cluster中部署SDEWAN CNF，并使能IKEv2和IPsec功能，验证流量从EdgeA cluster app1 pod，经Hub cluster，到达EdgeB cluster app2 pod的通路可达性。
 
-![OpenNESS SD-WAN Scenario 3 ](sdwan-images/sdewan-vpp-scenario3.png)
+![OpenNESS SD-WAN Scenario 3 ](sdwan-images/sdewan-vpp-scenario4.png)
+
+##### Prerequisites
+
+1. Deploy sdewan cnf using flavor on 3 single Edge and Hub nodes according to scenario A and B.
+2. Independent of Edge and Hub cluster, Overlay Controller has been deployed sucessfuly on Kubernetes platform.
+
+##### Test Steps
+
+1. Configing IKEv2 IPSec for 3 single Edge and Hub nodes on Overlay Controller：
+	- Edge nodeA:
+	```yaml
+	to add configuration details here
+	```
+	- Edge nodeB:
+	```yaml
+	to add configuration details here
+	```
+	- Hub node:
+	```yaml
+	to add configuration details here
+	``` 
+2. Ping app pod ip(any one ip) of Edge B inside app pod of Edge A:
+   - Execute:
+	 ```shell
+     on Edge node B:
+	 root@ceekvpp:~# kubectl get po -A -o wide|grep harbo
+     harbor          harbor-app-harbor-chartmuseum-575f7c84bd-rhnr8     1/1     Running   2          39h   10.245.95.247   ceekvpp   <none>           <none>
+     harbor          harbor-app-harbor-clair-779df4555b-4z7w4           2/2     Running   244        39h   10.245.95.253   ceekvpp   <none>           <none>
+     harbor          harbor-app-harbor-core-865d69fc9f-jlt9m            1/1     Running   2          39h   10.245.95.244   ceekvpp   <none>           <none>
+     harbor          harbor-app-harbor-database-0                       1/1     Running   2          39h   10.245.95.238   ceekvpp   <none>           <none>
+     harbor          harbor-app-harbor-jobservice-79996b68f6-bm2gg      1/1     Running   4          39h   10.245.95.246   ceekvpp   <none>           <none>
+     harbor          harbor-app-harbor-nginx-7c5748b8b7-lb4xn           1/1     Running   3          39h   10.245.95.251   ceekvpp   <none>           <none>
+     harbor          harbor-app-harbor-notary-server-6fff5467cb-s6nxx   1/1     Running   2          39h   10.245.95.235   ceekvpp   <none>           <none>
+	 on Edge node A:
+     root@ceekvpp:~# kubectl get pod -n harbor
+     NAME                                               READY   STATUS    RESTARTS   AGE
+     harbor-app-harbor-chartmuseum-575f7c84bd-rhnr8     1/1     Running   2          39h
+     harbor-app-harbor-clair-779df4555b-4z7w4           2/2     Running   244        39h
+     harbor-app-harbor-core-865d69fc9f-jlt9m            1/1     Running   2          39h
+     root@ceekvpp:~# kubectl exec -it harbor-app-harbor-chartmuseum-575f7c84bd-rhnr8 -c sdewan -- ping 10.245.95.247
+	 ```
+   - Example output:
+     ```
+     ping 10.245.95.247 56(84) bytes of data.
+	 64 bytes from 10.245.95.247: icmp_seq=1 ttl=115 time=137 ms
+     64 bytes from 10.245.95.247: icmp_seq=2 ttl=115 time=351 ms
+	 ```
+3. Check the interface address result inside cnf pod of 3 nodes:
+   - Execute:
+	 ```shell
+     root@ceekvpp:~# kubectl get pod
+     NAME                     READY   STATUS    RESTARTS   AGE
+     sdewan-9cd4c5c8c-8c886   2/2     Running   0          20h
+	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh int addr
+	 ```
+   - Example output:
+      ```
+      ‘ipip0’ interface is existing.
+	  ```
+4. Check the er result inside cnf pod of 3 nodes:
+   - Execute:
+	 ```shell
+	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh er
+	 ```
+   - Example output:
+      ```
+      contains ‘esp4-decrypt-tun’, ‘esp4-encrypt-tun’
+	  ```
 
 ### EWO Configuration
 There are five types configuration for EWO. With these configurations, it is easy to deploy the above scenarios automatically.
