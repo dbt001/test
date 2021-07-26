@@ -627,7 +627,7 @@ A more detailed description of this E2E test is provided under the link in the O
       contains ‘esp4-decrypt-tun’, ‘esp4-encrypt-tun’
 	  ```
 
-### EWO Configuration
+### EWO Configuration - [ need to refer test readme ]
 There are five types configuration for EWO. With these configurations, it is easy to deploy the above scenarios automatically.
 
 #### NodeSelector For CNF
