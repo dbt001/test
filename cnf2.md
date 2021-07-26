@@ -498,6 +498,71 @@ A more detailed description of this E2E test is provided under the link in the O
 
 ![OpenNESS SD-WAN Scenario 3 ](sdwan-images/sdewan-vpp-scenario3.png)
 
+##### Test Summary 
+
+> Configing IPSec on Overlay Controller->CRD Controller->SDEWAN CNF
+
+##### Prerequisites
+
+1. scenario A and B are successful.
+2. Independent of Edge and Hub cluster, Overlay Controller has been deployed sucessfuly on Kubernetes platform.
+
+##### Test Steps
+
+1. Configing IKEv2 IPSec for sdewan cnf(Edge nodeA and Hub node) on overlay controller：
+	- Edge nodeA:
+	```yaml
+	to add configuration details here
+	``` 
+	- Hub node:
+	```yaml
+	to add configuration details here
+	``` 
+2. Check the interface address result inside cnf pod:
+   - Execute:
+	 ```shell
+     root@ceekvpp:~# kubectl get pod
+     NAME                     READY   STATUS    RESTARTS   AGE
+     sdewan-9cd4c5c8c-8c886   2/2     Running   0          20h
+	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh int addr
+	 ```
+   - Example output:
+      ```
+      ‘ipip0’ interface is existing.
+	  ```
+3. Check the ikev2 profile inside cnf pod:
+   - Execute:
+	 ```shell
+	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh ikev2 profile
+	 ```
+   - Example output:
+     ```
+     ’profile‘ informations is existing.
+     ```
+4. Check the ikev2 sa inside cnf pod:
+   - Execute:
+	 ```shell
+	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh ikev2 sa
+	 ```
+   - Example output:
+     ```
+     ’profile‘ informations is existing.
+     ```
+5. Check the ipsec inside cnf pod:
+   - Execute:
+	 ```shell
+	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh ipsec all
+	 ```
+   - Example output:
+     ```
+	 Expected content here
+	 ``` 
+
+#### Scenario 4
+场景3在场景1，场景2的基础上进一步验证Overlay network的配置，需要同时在Hub cluster和Edge cluster中部署SDEWAN CNF，并使能IKEv2和IPsec功能。
+
+![OpenNESS SD-WAN Scenario 3 ](sdwan-images/sdewan-vpp-scenario3.png)
+
 ### EWO Configuration
 There are five types configuration for EWO. With these configurations, it is easy to deploy the above scenarios automatically.
 
