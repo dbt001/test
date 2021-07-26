@@ -494,16 +494,9 @@ A more detailed description of this E2E test is provided under the link in the O
 
 
 #### Scenario 3
-This scenario a sample OpenVINO benchmark application deployed on an OpenNESS edge platform equipped with an HDDL accelerator card. It reflects the use case in which a high performance OpenVINO application is executed on an OpenNESS single node cluster, deployed with an SD-WAN Edge. The SD-WAN Edge enables an HDDL plugin to provide the OpenNESS platform with support for workload acceleration via the HDDL card. More information on the OpenVINO sample application is provided under the following links:
+场景3在场景1，场景2的基础上进一步验证Overlay network的配置，需要同时在Hub cluster和Edge cluster中部署SDEWAN CNF，并使能IKEv2和IPsec功能。
 
-  - [OpenVINO Sample Application White Paper](https://github.com/otcshare/specs/blob/master/doc/applications/openness_openvino.md)
-
-  - [OpenVINO Sample Application Onboarding](https://github.com/otcshare/specs/blob/master/doc/applications-onboard/network-edge-applications-onboarding.md#onboarding-openvino-application)
-
-
-A more detailed description of this scenario is available in OpenNESS [documentation](https://github.com/otcshare/edgeapps/blob/master/network-functions/sdewan_cnf/e2e-scenarios/openvino-hddl-cluster/README.md)
-
-![OpenNESS SD-WAN Scenario 3 ](sdwan-images/e2e-scenario3.png)
+![OpenNESS SD-WAN Scenario 3 ](sdwan-images/sdewan-vpp-scenario3.png)
 
 ### EWO Configuration
 There are five types configuration for EWO. With these configurations, it is easy to deploy the above scenarios automatically.
