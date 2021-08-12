@@ -220,7 +220,7 @@ The following figure shows the system architecture of the SD-WAN Hub Reference A
 
 ![OpenNESS SD-WAN Hub Architecture ](sdwan-images/sdwan-hub-arch2.png)
 
-## Deployment
+## Deployment And Configuration 
 ### E2E Scenarios
 Four end-to-end scenarios have been validated to verify deployment of an SD-WAN on OpenNESS. The four scenarios are described in the following sections of this document. 
 
@@ -251,7 +251,25 @@ Four end-to-end scenarios have been validated to verify deployment of an SD-WAN 
 
 ![Topology Overview](sdwan-images/itp_ned_46_01.png)
 
-#### Scenario 1
+**Notes:** 
+
+If there is no WAN Switch/Router equipment in the lab environment, DHCP server can be setting for adjusting the environment *as optional*, dhcp configuration file `cat /etc/dhcp/dhcpd.conf`, like as:
+
+  ```
+  ddns-update-style interim;
+  ignore client-updates;
+  allow booting;
+  allow bootp;
+  subnet 192.168.123.0 netmask 255.255.255.0 {
+  option routers 192.168.123.1;
+  option subnet-mask 255.255.255.0;
+  option broadcast-address 192.168.123.255;
+  range dynamic-bootp 192.168.123.10 192.168.123.100;
+  default-lease-time 1200;
+  max-lease-time 7200;
+  ```
+
+#### Scenario 1 - Scenario A:Using Flavor to deploy on Hub Node
 
 场景1用于验证使用Flavor的方式成功在Edge Node部署SDEWAN CNF.  
 
@@ -263,120 +281,257 @@ A more detailed description of this E2E test is provided under the link in the O
 
 ##### Prerequisites
 
-1. Ubuntu OS is installed sucessfully.
-2. `otcshare/ido-converged-edge-experience-kits` checked out on all edge and hub servers.
-3. use command `git submodule init` and `git submodule update` checkout `ceek` folder.
-4. SSH key generated & copied for the remote server.
-5. configure `ansible_host` and `ansible_user` for `controller_group` and `edgenode_group` in `inventory.yml` file under `/ido-converged-edge-experience-kits/`.
-6. set proper proxy for all nodes.
+1. `otcshare/ido-converged-edge-experience-kits` checked out branch *br_tieto_ido-ewo* on hub server.
+2. Use command `git submodule update --init`  checkout `ceek` folder.
+3. SSH key generated & copied for the remote server with `ssh-keygen` and `ssh-copy-id nodename@ip`
+4. Configure `ansible_host` and `ansible_user` for `controller_group` and `edgenode_group` in `inventory.yml` file under `/ido-converged-edge-experience-kits/`.
+5. Set `git_repo_token` in _ceek/inventory/default/group_vars/all/10-default.yml_
+6. Current time on machine must be set.
+7. NTP/time role enabled in _group_vars/all/10-default.yml_ in _Network Time Protocol (NTP)_ section.
+8. NTP server has to be specified in _ceek/inventory/default/group_vars/all/10-default.yml_ in list _ntp_servers e.g. ntp_servers: [" 0.centos.pool.ntp.org"]_.
+9. Set proper proxy if need.
 
 ##### Test Steps
+1. Deploy sdewan vpp cnf and crd controller on hub node using **sdwan** flavor. 
 
-1. deploy SDEWAN CNF on edge nodes A&B using flavor. 
-2. Modify Pre-defined configuration File：
-	```yaml
-	to add configuration details here
-	``` 
-3. Modify _flavors/sdwan/all.yml_  for	sdewan cnf(vpp) edge deployment：
-	```yaml
-	to add configuration details here
-	``` 
-4. Modify _inventory.yml (falvor: sdwan)_
-	```yaml
-	to add configuration details here
-	```		
-5. run _`./deploy.py`_ and wait till it ends successfully.
+2. Modify _roles/applications/sdewan/vpp/controlplane/defaults/main.yml_ for pre-defined configuration, according to hardware requirements to modify, as below:
+
+   2.1) *devs*:  **devs' pci number** can be got with `lspci | grep "I350 Gigabit Network"`, like as:
+
+      ```
+      66:00.1 Ethernet controller: Intel Corporation I350 Gigabit Network Connection 
+      66:00.2 Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+      66:00.3 Ethernet controller: Intel Corporation I350 Gigabit Network Connection 
+      ```
+   
+   2.2) *wan*: two wan informations need to set.
+   
+   ```yaml
+   _sdewan_cnfvpp_cfg:
+     devs:
+       - "0000:66:00.1"
+       - "0000:66:00.2"
+     qats:
+       - "0000:b7:01.0"
+     wan:
+       - name: GigabitEthernet66/0/1
+         static_ip_address: 157.1.2.3
+         enable_default_gateway: true
+         preference: 0
+         weight: 1
+         enable_dhcp: true
+         enable_nat: true
+       - name: GigabitEthernet66/0/2
+         static_ip_address: 157.1.2.3
+         enable_default_gateway: true
+         preference: 10
+         weight: 11
+         enable_dhcp: true
+         enable_nat: true
+     dhcp:
+       server:
+         ippool_start: 172.30.10.100
+         ippool_end: 172.30.10.200
+         ippool_gateway: 172.30.10.1
+         ippool_mask: 255.255.255.0
+         ippool_leasetime: 28800
+         ippool_dns: 8.8.8.8
+         ippool_address: 172.30.10.4/24
+         ippool_subnet: 172.30.10.0/24
+     gateway_tap:
+       vpp_ip_address: 169.254.10.1
+       host_ip_address: 169.254.10.5/24
+     metadata:
+       name: sdewan-cnfvpp-pod
+       namespace: cnfvpp
+       labels: sdewan-cnfvpp-pod
+       cert: cnf-default-cert
+       auth:
+         name: cnf-default-auth
+         user: admin
+         pwd: admin
+     nodeSelectorLabelName: "sdewan-cnfvpp-node"
+     nodeSelectorLabelValue: "controller"
+     resources:
+       limits:
+         hugepages: 200Mi
+         memory: 500Mi
+       requests:
+         cpu: 150m
+     cpu:
+       maincore: 0
+       corelist_workers:
+     image:
+       sdewan_cnfvpp_image: sdewan-cnfvpp-service
+     ipsec_rules:
+       - name: ipsectunnel1
+         remote: 10.10.10.35
+         pre_shared_key: "0123456789012345"
+         local_identifier: cnfvpp
+         remote_identifier: cnfvpp
+         local_subnet: 192.168.5.1/24
+         remote_sourceip: "192.168.6.1-192.168.6.254"
+         remote_subnet: 192.168.1.1/24
+         local_sourceip: "192.168.6.1-192.168.6.254"
+     features:
+       enable_ipsec: false
+       enable_qat: true
+   ```
+   
+3. Modify _flavors/sdwan/all.yml_  for sdewan vpp cnf(vpp) hub deployment：
+
+  ```yaml
+ ## sde-wan edge enable
+ sdewan_edge_enable: False
+
+ ## sde-wan hub enable
+ sdewan_hub_enable: False
+
+ ## sde-wan vpp enable
+ sdewan_controller_enable: True
+ sdewan_edge_vpp_enable: False
+ sdewan_hub_vpp_enable: True
+ 
+ ## fixme: input your own git repo token here
+ git_repo_token: "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"
+  ```
+
+4. Modify _inventory.yml_, flavor is **sdwan** and single_node_deployment is **true**:
+
+  ```yaml
+ all:
+   vars:
+     cluster_name: cluster_test    # NOTE: Use `_` instead of spaces.
+     flavor: sdwan                 # NOTE: Flavors can be found in `flavors` directory.
+     single_node_deployment: true  # Request single node deployment (true/false).
+     limit:                        # Limit ansible deployment to certain inventory group or hosts
+ controller_group:
+   hosts:
+     controller:
+       ansible_host: 192.168.0.165
+       ansible_user: openness
+ edgenode_group:
+   hosts:
+     node01:
+       ansible_host: 192.168.0.165
+       ansible_user: openness
+ edgenode_vca_group:
+   hosts:
+ ptp_master:
+   hosts:
+ ptp_slave_group:
+   hosts:
+  ```
+
+5. Run _`./deploy.py`_ and wait till it ends successfully.
+
 6. Check the node result:
+
    - Execute:
-	 ```shell
-	 root@ceekvpp:~# kubectl get nodes
-	 ```
+
+    ```shell
+   openness@controller:~$ # kubectl get nodes
+    ```
+
    - Example output:
-	 ```
-	 NAME	   STATUS	ROLES				   AGE	  VERSION
-	 ceekvpp   Ready	control-plane,master   3d1h	  v1.20.0
-	 ```
-7. Check the pods(sdewan,sdewan-crd-controller,harbor,calico...) status:
+
+    ```
+   NAME         STATUS   ROLES                  AGE   VERSION
+   controller   Ready    control-plane,master   18h   v1.20.0
+    ```
+
+7. Check the pods(such as sdewan-cnfvp, sdewan-controller,harbor,calico,cert-manager) status:
+
    - Execute:
-	 ```shell
-	 root@ceekvpp:~# kubectl get po -A
-	 ```
+
+    ```shell
+   openness@controller:~$ # kubectl get po -n cnfvpp
+    ```
+
    - Example output:
-	 ```
-	 NAMESPACE       NAME                                               READY   STATUS    RESTARTS   AGE
-     cert-manager    cert-manager-5597cff495-dcmvm                      1/1     Running   0          24h
-     cert-manager    cert-manager-cainjector-bd5f9c764-8rdms            1/1     Running   0          24h
-     cert-manager    cert-manager-webhook-5f57f59fbc-wgnsr              1/1     Running   0          24h
-     default         sdewan-9cd4c5c8c-8c886                             2/2     Running   0          20h
-     harbor          harbor-app-harbor-chartmuseum-685569858b-w8wc9     1/1     Running   0          3d1h
-     harbor          harbor-app-harbor-clair-779df4555b-ftfjc           2/2     Running   440        3d1h
-     harbor          harbor-app-harbor-core-57fdf4d4-pc28q              1/1     Running   0          3d1h
-     harbor          harbor-app-harbor-database-0                       1/1     Running   0          3d1h
-     harbor          harbor-app-harbor-jobservice-994696fc8-bkspf       1/1     Running   2          3d1h
-     harbor          harbor-app-harbor-nginx-7ff49cf9c4-f6cfn           1/1     Running   0          3d1h
-     harbor          harbor-app-harbor-notary-server-b4bb8f78b-xcwmv    1/1     Running   3          3d1h
-     harbor          harbor-app-harbor-notary-signer-8485f97c8c-rkwx6   1/1     Running   4          3d1h
-     harbor          harbor-app-harbor-portal-fd5ff4bc9-tq55c           1/1     Running   0          3d1h
-     harbor          harbor-app-harbor-redis-0                          1/1     Running   0          3d1h
-     harbor          harbor-app-harbor-registry-656b744d74-qppxx        2/2     Running   0          3d1h
-     harbor          harbor-app-harbor-trivy-0                          1/1     Running   0          3d1h
-     kube-system     calico-kube-controllers-856cdfb67c-67hdt           1/1     Running   0          3d1h
-     kube-system     calico-node-59jxf                                  1/1     Running   0          3d1h
-     kube-system     coredns-74ff55c5b-4zkcm                            1/1     Running   0          3d1h
-     kube-system     coredns-74ff55c5b-fp4l8                            1/1     Running   0          3d1h
-     kube-system     etcd-ceekvpp                                       1/1     Running   0          3d1h
-     kube-system     kube-apiserver-ceekvpp                             1/1     Running   0          3d1h
-     kube-system     kube-controller-manager-ceekvpp                    1/1     Running   0          3d1h
-     kube-system     kube-proxy-nfw5x                                   1/1     Running   0          3d1h
-     kube-system     kube-scheduler-ceekvpp                             1/1     Running   0          3d1h
-     sdewan-system   sdewan-crd-controller-5bbcfc6875-jqg4m             2/2     Running   0          21h
-	 ```
+
+    ```
+   NAMESPACE       NAME                                               READY   STATUS      RESTARTS   AGE
+   cert-manager    cert-manager-5597cff495-5rmn7                      1/1     Running     1          17h
+   cert-manager    cert-manager-cainjector-bd5f9c764-t9zcq            1/1     Running     3          17h
+   cert-manager    cert-manager-webhook-5f57f59fbc-7vwtk              1/1     Running     0          17h
+   cnfvpp          sdewan-cnfvpp-pod-6b67dcd5d5-7wxlk                 2/2     Running     0          17h
+   harbor          harbor-app-harbor-chartmuseum-f56cb984b-w77zw      1/1     Running     0          18h
+   harbor          harbor-app-harbor-clair-779df4555b-n9lhz           2/2     Running     11         18h
+   harbor          harbor-app-harbor-core-86f6575644-77mr5            1/1     Running     4          18h
+   harbor          harbor-app-harbor-database-0                       1/1     Running     3          18h
+   harbor          harbor-app-harbor-jobservice-7df4c9968c-2xb9v      1/1     Running     2          18h
+   harbor          harbor-app-harbor-nginx-678c759dc4-bd7bq           1/1     Running     0          18h
+   harbor          harbor-app-harbor-notary-server-67f644d8bc-cbspx   1/1     Running     3          18h
+   harbor          harbor-app-harbor-notary-signer-7bf556c585-tjbnl   1/1     Running     0          18h
+   harbor          harbor-app-harbor-portal-fd5ff4bc9-h7cq4           1/1     Running     0          18h
+   harbor          harbor-app-harbor-redis-0                          1/1     Running     0          18h
+   harbor          harbor-app-harbor-registry-5d8c9879c4-72zb4        2/2     Running     0          18h
+   harbor          harbor-app-harbor-trivy-0                          1/1     Running     0          18h
+   kube-system     calico-kube-controllers-7f4f5bf95d-4jwsx           1/1     Running     2          18h
+   kube-system     calico-node-h98ss                                  1/1     Running     2          18h
+   kube-system     coredns-74ff55c5b-6nbzb                            1/1     Running     0          18h
+   kube-system     coredns-74ff55c5b-v6sf8                            1/1     Running     0          18h
+   kube-system     descheduler-cronjob-1628316600-rqzlr               0/1     Completed   0          4m32s
+   kube-system     descheduler-cronjob-1628316720-bztxx               0/1     Completed   0          2m32s
+   kube-system     descheduler-cronjob-1628316840-tp6l2               0/1     Completed   0          31s
+   kube-system     etcd-controller                                    1/1     Running     1          18h
+   kube-system     kube-apiserver-controller                          1/1     Running     1          18h
+   kube-system     kube-controller-manager-controller                 1/1     Running     4          18h
+   kube-system     kube-proxy-9j88v                                   1/1     Running     0          18h
+   kube-system     kube-scheduler-controller                          1/1     Running     6          18h
+   sdewan-system   sdewan-controller-5b98cc5dfd-wzlmm                 2/2     Running     24         17h
+   telemetry       collectd-mcrfc                                     2/2     Running     0          18h
+   telemetry       custom-metrics-apiserver-5677d4ff98-z965s          1/1     Running     0          18h
+   telemetry       grafana-598f94f88f-qxthd                           2/2     Running     0          18h
+   telemetry       otel-collector-649fb7bf69-rpb97                    2/2     Running     0          18h
+   telemetry       prometheus-node-exporter-g8s62                     1/1     Running     0          18h
+   telemetry       prometheus-server-548ddd7959-87vkf                 3/3     Running     0          18h
+   telemetry       telemetry-aware-scheduling-7697dfb9c6-p4mst        2/2     Running     2          18h
+   telemetry       telemetry-collector-certs-hh2dl                    0/1     Completed   0          18h
+   telemetry       telemetry-node-certs-6lqrt                         1/1     Running     0          18h
+    ```
+
 8. Check the reference volumes special "cnf-default-cert" and “cnf-default-auth” have been mounted into cnf pod:
+
    - Execute:
-	 ```shell
-     root@ceekvpp:~# kubectl get pod
-     NAME                     READY   STATUS    RESTARTS   AGE
-     sdewan-9cd4c5c8c-8c886   2/2     Running   0          20h
-     root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- ll /etc/crd-ctrlr-adpt/cert
-     root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- ll /etc/crd-ctrlr-adpt/auth
-	 ```
+
+    ```shell
+   openness@controller:~$ #kubectl exec -it sdewan-cnfvpp-pod-6b67dcd5d5-7wxlk -n cnfvpp -c cnfvpp -- ls -l /etc/crd-ctrlr-adpt/
+    ```
+   
    - Example output:
-	 ```
-     The directories cert and auth are existing.
-	 ```
-	 
+   
+    ```
+   drwxrwxrwt 3 root root 120 Aug  2 08:13 auth
+   drwxrwxrwt 3 root root 140 Aug  2 08:13 cert
+    ```
+   
 9. Check the interface address result inside cnf pod:
-   - Execute:
-	 ```shell
-     root@ceekvpp:~# kubectl get pod
-     NAME                     READY   STATUS    RESTARTS   AGE
-     sdewan-9cd4c5c8c-8c886   2/2     Running   0          20h
-     root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh int addr
-	 ```
-   - Example output:
-	 ```
-     GigabitEthernet66/0/1 (up):
-       L2 bridge bd-id 1 idx 1 shg 0
-     GigabitEthernet66/0/2 (up):
-       L3 192.168.1.194/24 ip4 table-id 1 fib-idx 1
-     local0 (dn):
-     loop0 (up):
-       L2 bridge bd-id 1 idx 1 shg 0 bvi
-       L3 172.30.10.1/24
-     tap0 (up):
-       L2 bridge bd-id 1 idx 1 shg 0
-	 ```
-10. Check the nat interface result inside cnf pod:
-   - Execute:
-	 ```shell
-	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh nat44 interfaces
-	 ```
-   - Example output:
-	 ```
-     NAT44 interfaces:
-      loop0 in
-      GigabitEthernet66/0/2 out
-	 ```
+
+   - Execute and output:
+
+    ```shell
+   openness@controller:~$ #kubectl exec -it sdewan-cnfvpp-pod-6b67dcd5d5-7wxlk -n cnfvpp -c cnfvpp -- vppctl sh int addr
+   sh int addr
+   GigabitEthernet66/0/1 (up):
+     L3 192.168.0.210/24 ip4 table-id 1 fib-idx 1
+   GigabitEthernet66/0/2 (up):
+     L3 192.168.1.191/24 ip4 table-id 1 fib-idx 1
+   local0 (dn):
+   loop0 (up):
+     L2 bridge bd-id 1 idx 1 shg 0 bvi
+     L3 172.30.20.1/24
+   tap0 (up):
+     L2 bridge bd-id 1 idx 1 shg 0
+   tap1 (up):
+     L3 192.168.5.1/24 ip4 table-id 1 fib-idx 1
+   openness@controller:~$ #kubectl exec -it sdewan-cnfvpp-pod-68d99d5d4c-chq5r -n cnfvpp -c cnfvpp -- vppctl sh nat44 interfaces
+   NAT44 interfaces:
+    loop0 in
+    GigabitEthernet66/0/1 out
+    GigabitEthernet66/0/2 out
+    ```
 
 #### Scenario 2
 场景2用于验证使用Flavor的方式成功在Hub Node部署SDEWAN CNF.  
