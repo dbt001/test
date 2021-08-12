@@ -808,66 +808,358 @@ A more detailed description of this E2E test is provided under the link in the O
    2.2) Repeat the steps of Edge A to deploy sdewan vpp cnf on edge node B using flavor sdwan.
 
 
-#### Scenario 3
+#### Scenario 3 : Verify Data Flow
 场景3在场景1，场景2的基础上进一步验证Overlay network的配置，需要同时在Hub cluster和Edge cluster中部署SDEWAN CNF，并使能IKEv2和IPsec功能。
 
 ![OpenNESS SD-WAN Scenario 3 ](sdwan-images/sdewan-vpp-scenario3.png)
 
 ##### Prerequisites
 
-1. scenario A and B are successful.
+1. Deploy sdewan vpp cnf using flavor on 3 single Edge and Hub nodes according to scenario A and B.
 2. Independent of Edge and Hub cluster, Overlay Controller has been deployed sucessfuly on Kubernetes platform.
+3. Checkout files `ngfw.yaml`  , `ipsec_hub.yaml`,`ipsec_edgea.yaml` and `ipsec_edgeb.yaml` are store in `ts_resources/ts_resources/ts46_files/`
 
 ##### Test Steps
 
-1. Configing IKEv2 IPSec for sdewan cnf(Edge nodeA and Hub node) on overlay controller：
-	- Edge nodeA:
-	```yaml
-	to add configuration details here
-	``` 
-	- Hub node:
-	```yaml
-	to add configuration details here
-	``` 
-2. Check the interface address result inside cnf pod:
+1. Configing IKEv2 IPSec for 3 single Edge and Hub nodes：
+
+   - Hub node:
+
+   ```yaml
+    kubectl apply -f ipsec_hub.yaml
+   ```
+
+    `cat ipsec_hub.yaml` like as below: 
+
+   ```
+   ---
+   
+   apiVersion: batch.sdewan.akraino.org/v1alpha1
+   kind: IpsecSite
+   metadata:
+     name: ipsectunnela
+     namespace: cnfvpp
+     labels:
+       sdewanPurpose: sdewan-cnfvpp-pod
+   spec:
+     name: ipsectunnela
+     remote: "%any"
+     pre_shared_key: "0123456789012345"
+     authentication_method: psk
+     local_identifier: cnfvppa
+     remote_identifier: cnfvppa
+     crypto_proposal:
+       - ipsecproposal
+     force_crypto_proposal: "0"
+     connections:
+     - name: connA
+       conn_type: tunnel
+       mode: start
+       local_subnet: 192.168.5.1/24
+       remote_sourceip: 192.168.6.1-192.168.6.254
+       crypto_proposal:
+         - ipsecproposal
+         
+   ---
+   
+   apiVersion: batch.sdewan.akraino.org/v1alpha1
+   kind: IpsecSite
+   metadata:
+     name: ipsectunnelb
+     namespace: cnfvpp
+     labels:
+       sdewanPurpose: sdewan-cnfvpp-pod
+   spec:
+     name: ipsectunnelb
+     remote: "%any"
+     pre_shared_key: "0123456789012345"
+     authentication_method: psk
+     local_identifier: cnfvppb
+     remote_identifier: cnfvppb
+     crypto_proposal:
+       - ipsecproposal
+     force_crypto_proposal: "0"
+     connections:
+     - name: connA
+       conn_type: tunnel
+       mode: start
+       local_subnet: 192.168.5.1/24
+       remote_sourceip: 192.168.7.1-192.168.7.254
+       crypto_proposal:
+         - ipsecproposal
+   ```
+
+   - Edge nodeA:
+
+   ```yaml
+    kubectl apply -f ipsec_edgea.yaml
+   ```
+
+   `cat ipsec_edgea.yaml` like as below: 
+
+   ```
+   ---
+   
+   apiVersion: batch.sdewan.akraino.org/v1alpha1
+   kind: IpsecHost
+   metadata:
+     name: ipsectunnela
+     namespace: cnfvpp
+     labels:
+       sdewanPurpose: sdewan-cnfvpp-pod
+   spec:
+     name: ipsectunnela
+     remote: 192.168.0.191
+     pre_shared_key: "0123456789012345"
+     authentication_method: psk
+     local_identifier: cnfvppa
+     remote_identifier: cnfvppa
+     crypto_proposal:
+       - ipsecproposal
+     force_crypto_proposal: "0"
+     connections:
+     - name: connA
+       conn_type: tunnel
+       mode: start
+       remote_subnet: 192.168.5.1/24
+       local_sourceip: 192.168.6.1-192.168.6.254
+       crypto_proposal:
+         - ipsecproposal
+   
+   ```
+
+   - Edge  nodeB:
+
+   ```yaml
+    kubectl apply -f ipsec_edgeb.yaml
+   ```
+
+   `cat ipsec_edgeb.yaml` like as below: 
+
+   ```
+   ---
+   
+   apiVersion: batch.sdewan.akraino.org/v1alpha1
+   kind: IpsecHost
+   metadata:
+     name: ipsectunnelb
+     namespace: cnfvpp
+     labels:
+       sdewanPurpose: sdewan-cnfvpp-pod
+   spec:
+     name: ipsectunnelb
+     remote: 192.168.0.190
+     pre_shared_key: "0123456789012345"
+     authentication_method: psk
+     local_identifier: cnfvppb
+     remote_identifier: cnfvppb
+     crypto_proposal:
+       - ipsecproposal
+     force_crypto_proposal: "0"
+     connections:
+     - name: connA
+       conn_type: tunnel
+       mode: start
+       remote_subnet: 192.168.5.1/24
+       local_sourceip: 192.168.7.1-192.168.7.254
+       crypto_proposal:
+         - ipsecproposal
+   
+   ```
+
+2. On Overlay Controller
+
+   - [ ] Route the traffic originated from SCC to CNF, apply these on the host, like as：
+
+   ```
+   ip rule add to <overlay ip of the edge's CNF> lookup 40
+   ip route add default via <cnf-ip-address> dev <calico-interface-for-cnf> table 40
+   ```
+
+   - [ ] Change the mark of second configuration **Mark: 50**，  like as：
+
+   ```
+   $ kubectl describe ipsechost -n cnfvpp
+   Name: ipsectunnelb
+   Namespace: cnfvpp
+   Kind: IpsecHost
+   Metadata:
+   Spec:
+    authentication_method: pubkey
+    Connections:
+    conn_type: tunnel
+    crypto_proposal:
+    proposal1
+    proposal2
+    local_updown: /etc/updown
+    Mark: 50
+    Mode: start
+    Name: Conndevice2
+    remote_sourceip: 192.168.0.180
+    crypto_proposal:
+    proposal1
+    proposal2
+    force_crypto_proposal: 0
+    local_identifier: CN=sdewan-controller-base
+    local_private_cert: …
+    local_public_cert: …
+    Remote: %any
+    remote_identifier: CN=device-device-2-cert
+    shared_ca: …
+    Type: VTI-base
+   ```
+
+3. Check the interface address result inside cnf pod of 3 nodes:
+
    - Execute:
-	 ```shell
-     root@ceekvpp:~# kubectl get pod
-     NAME                     READY   STATUS    RESTARTS   AGE
-     sdewan-9cd4c5c8c-8c886   2/2     Running   0          20h
-	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh int addr
-	 ```
+
+    ```shell
+   openness@controller:~$ # kubectl get pod -n cfvpp
+   NAME                                 READY   STATUS    RESTARTS   AGE
+   sdewan-cnfvpp-pod-68d99d5d4c-chq5r   2/2     Running   0          20h
+   openness@controller:~$ #kubectl exec -it sdewan-cnfvpp-pod-68d99d5d4c-chq5r -n cnfvpp -c cnfvpp -- vppctl sh int addr
+   openness@controller:~$ #kubectl exec -it sdewan-cnfvpp-pod-68d99d5d4c-chq5r -n cnfvpp -c cnfvpp -- vppctl sh ikev2 profile
+    ```
+
    - Example output:
-      ```
-      ‘ipip0’ interface is existing.
-	  ```
-3. Check the ikev2 profile inside cnf pod:
+
+     - Hub：ikev2 profiles contains two named *ipsecsite_cnfvpp_ipsec_tunnela_connA* and *ipsecsite_cnfvpp_ipsec_tunnela_connB*
+
+       ```
+       vpp# sh ikev2 profile
+       profile ipsecsite_cnfvpp_ipsec_tunnela_connA
+         auth-method shared-key-mic auth data 0123456789012345
+         local id-type fqdn data cnfvppa
+         remote id-type fqdn data cnfvppa
+         local traffic-selector addr 192.168.5.1 -192.168.5.254 port 0 - 65535 protocol 0
+         remote traffic-selector addr 192.168.6.1 - 192.168.6.254 port 0 - 65535 protocol 0
+         lifetime 0 jitter 0 handover 0 maxdata 0
+       profile ipsecsite_cnfvpp_ipsec_tunnelb_connA
+         auth-method shared-key-mic auth data 0123456789012345
+         local id-type fqdn data cnfvppb
+         remote id-type fqdn data cnfvppb
+         local traffic-selector addr 192.168.5.1 -192.168.5.254 port 0 - 65535 protocol 0
+         remote traffic-selector addr 192.168.7.1 - 192.168.7.254 port 0 - 65535 protocol 0
+         lifetime 0 jitter 0 handover 0 maxdata 0
+       
+       vpp# sh int addr
+       GigabitEthernet66/0/1 (up):
+       L3 192.168.0.190/24 ip4 table-id 1 fib-idx 1
+       GigabitEthernet66/0/2 (up):
+         L3 192.168.0.191/24 ip4 table-id 1 fib-idx 1
+       ipip0 (up):
+       ipip1 (up):
+       ```
+       
+     - EdgeA：
+     
+       ```
+       vpp# sh ikev2 profile
+       profile ipsecsite_cnfvpp_ipsec_tunnela_connA
+         auth-method shared-key-mic auth data 0123456789012345
+         local id-type fqdn data cnfvppa
+         remote id-type fqdn data cnfvppa
+         local traffic-selector addr 192.168.6.1 - 192.168.6.254 port 0 - 65535 protocol 0
+         remote traffic-selector addr 192.168.5.1 -192.168.5.254 port 0 - 65535 protocol 0
+         responder GigabitEthernetb6/0/0 192.168.0.191
+         ike-crypto-alg aes-cbc 256 ike-integ-alg sha1-96 ike-dh modp-2048
+         esp-crypto-alg aes-cbc 256 esp-integ-alg sha1-96
+         lifetime 0 jitter 0 handover 0 maxdata 0
+       
+        vpp# sh int addr
+       GigabitEthernetb6/0/0 (up):
+         L3 192.168.0.77/24 ip4 table-id 1 fib-idx 1
+       GigabitEthernetb6/0/1 (up):
+         L2 bridge bd-id 1 idx 1 shg 0
+       local0 (dn):
+       loop0 (up):
+         L2 bridge bd-id 1 idx 1 shg 0 bvi
+         L3 172.30.10.1/24
+       tap0 (up):
+         L2 bridge bd-id 1 idx 1 shg 0
+       ipip0 (up):
+       ```
+     
+     - EdgeB：
+     
+     ```
+     vpp# sh ikev2 profile
+     profile ipsecsite_cnfvpp_ipsec_tunnelb_connB
+       auth-method shared-key-mic auth data 0123456789012345
+       local id-type fqdn data cnfvppb
+       remote id-type fqdn data cnfvppb
+       local traffic-selector addr 192.168.7.1 -192.168.7.254 port 0 - 65535 protocol 0
+       remote traffic-selector addr 192.168.5.1 -192.168.5.254 port 0 - 65535 protocol 0
+       responder GigabitEthernetb6/0/0 192.168.0.190
+       ike-crypto-alg aes-cbc 256 ike-integ-alg sha1-96 ike-dh modp-2048
+       esp-crypto-alg aes-cbc 256 esp-integ-alg sha1-96
+       lifetime 0 jitter 0 handover 0 maxdata 0
+       
+       vpp# sh int addr
+     GigabitEthernetb6/0/0 (up):
+       L3 192.168.0.76/24 ip4 table-id 1 fib-idx 1
+     GigabitEthernetb6/0/1 (up):
+       L2 bridge bd-id 1 idx 1 shg 0
+     local0 (dn):
+     loop0 (up):
+       L2 bridge bd-id 1 idx 1 shg 0 bvi
+       L3 172.30.30.1/24
+     tap0 (up):
+       L2 bridge bd-id 1 idx 1 shg 0
+     ipip0 (up):
+     
+     ```
+
+4. Ping app pod ip(any one ip) of Edge B inside app pod of Edge A:
+
    - Execute:
-	 ```shell
-	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh ikev2 profile
-	 ```
+
+      ```shell
+     on Edge node B:
+      openness@controller:~$ #  kubectl get po -n harbor -o wide | grep clair
+      harbor-app-harbor-clair-779df4555b-h52cr  2/2  Running   138  23h   10.245.49.6 
+     
+     on Edge node A:
+      openness@controller:~$ #  kubectl get po -n harbor -o wide | grep clair
+      harbor-app-harbor-clair-779df4555b-j6fd7  2/2  Running   138  23h   10.245.49.13 
+     
+      openness@controller:~$ # kubectl exec -it harbor-app-harbor-clair-779df4555b-j6fd7 -n harbor -- ping 10.245.49.6
+     ```
+
    - Example output:
+
      ```
-     ’profile‘ informations is existing.
+     ping 10.245.49.13 56(84) bytes of data.
+      64 bytes from 10.245.49.13: icmp_seq=1 ttl=115 time=137 ms
+      64 bytes from 10.245.49.13: icmp_seq=2 ttl=115 time=351 ms
      ```
-4. Check the ikev2 sa inside cnf pod:
+
+
+4. Check the er result inside cnf pod of 3 nodes:
+
    - Execute:
-	 ```shell
-	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh ikev2 sa
-	 ```
-   - Example output:
+
      ```
-     ’profile‘ informations is existing.
+     openness@controller:~$ #kubectl exec -it sdewan-cnfvpp-pod-68d99d5d4c-chq5r -n cnfvpp -c cnfvpp -- vppctl sh er
      ```
-5. Check the ipsec inside cnf pod:
-   - Execute:
-	 ```shell
-	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh ipsec all
-	 ```
-   - Example output:
+
+   - Example output:  contains *ikev2, esp4-decrypt-tun* and *esp4-encrypt-tun*
+
      ```
-	 Expected content here
-	 ``` 
+         Count                    Node                  Reason
+              2                  ikev2                 IKEv2 packets processed
+              1                  ikev2                 IKE request ignore (old msgid)
+             21               dpdk-input               no error
+              2                arp-reply               ARP replies sent
+             11                arp-reply               ARP request IP4 source address learned
+              2             ip4-udp-lookup             No error
+              1             ip4-udp-lookup             No listener for dst port
+             12            esp4-decrypt-tun            ESP pkts received
+             12            esp4-encrypt-tun            ESP pkts received
+             12            ipsec4-tun-input            good packets received
+              8                ip4-input               Multicast RPF check failed
+              1             ip4-icmp-error             destination unreachable response sent
+     ```
 
 #### Scenario 4
 场景4在场景3的基础上进一步验证Overlay network的数据流量通路，采用Hub-Spoke组网模型，需要同时在Hub cluster和两个Edge cluster中部署SDEWAN CNF，并使能IKEv2和IPsec功能，验证流量从EdgeA cluster app1 pod，经Hub cluster，到达EdgeB cluster app2 pod的通路可达性。
