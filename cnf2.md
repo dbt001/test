@@ -23,7 +23,7 @@ Copyright (c) 2020 Intel Corporation
     - [Hardware Specification](#hardware-specification)
     - [Software Specification](#software-specification)
     - [Scenario 1 : Using Flavor to deploy on Hub Node](#scenario-1-using-flavor-to-deploy-on-hub-node)
-    - [Scenario 2 : Using Flavor to deploy on Edge Node](#scenario-2-scenario-ausing-flavor-to-deploy-on-edge-node)
+    - [Scenario 2 : Using Flavor to deploy on Edge Node](#scenario-2-using-flavor-to-deploy-on-edge-node)
     - [Scenario 3](#scenario-3)
     - [Scenario 4](#scenario-4)    
   - [EWO Configuration](#ewo-configuration)
