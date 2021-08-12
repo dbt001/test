@@ -2,7 +2,6 @@
 SPDX-License-Identifier: Apache-2.0     
 Copyright (c) 2020 Intel Corporation  
 ```
-[TOC]
 <!-- omit in toc -->
 # Converged Edge Reference Architecture for SD-WAN(vpp based)
 - [Introduction](#introduction)
@@ -23,7 +22,7 @@ Copyright (c) 2020 Intel Corporation
   - [E2E Scenarios](#e2e-scenarios)
     - [Hardware Specification](#hardware-specification)
     - [Software Specification](#software-specification)
-    - [Scenario 1](#Scenario 1 - Scenario A:Using Flavor to deploy on Hub Node)
+    - [Scenario 1 : Using Flavor to deploy on Hub Node](#scenario-1-using-flavor-to-deploy-on-hub-node)
     - [Scenario 2](#scenario-2)
     - [Scenario 3](#scenario-3)
     - [Scenario 4](#scenario-4)    
@@ -270,7 +269,7 @@ If there is no WAN Switch/Router equipment in the lab environment, DHCP server c
   max-lease-time 7200;
   ```
 
-#### Scenario 1 - Scenario A:Using Flavor to deploy on Hub Node
+#### Scenario 1 : Using Flavor to deploy on Hub Node
 
 场景1用于验证使用Flavor的方式成功在Edge Node部署SDEWAN CNF.  
 
