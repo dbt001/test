@@ -24,7 +24,7 @@ Copyright (c) 2020 Intel Corporation
     - [Software Specification](#software-specification)
     - [Scenario 1 : Using Flavor to deploy on Hub Node](#scenario-1-using-flavor-to-deploy-on-hub-node)
     - [Scenario 2 : Using Flavor to deploy on Edge Node](#scenario-2-using-flavor-to-deploy-on-edge-node)
-    - [Scenario 3](#scenario-3)
+    - [Scenario 3 : Verify Data Flow](#scenario-3-verify-data-flow)
     - [Scenario 4](#scenario-4)    
   - [EWO Configuration](#ewo-configuration)
     - [NodeSelector For CNF](#nodeselector-for-cnf)
@@ -1044,7 +1044,7 @@ A more detailed description of this E2E test is provided under the link in the O
        
        vpp# sh int addr
        GigabitEthernet66/0/1 (up):
-       L3 192.168.0.190/24 ip4 table-id 1 fib-idx 1
+         L3 192.168.0.190/24 ip4 table-id 1 fib-idx 1
        GigabitEthernet66/0/2 (up):
          L3 192.168.0.191/24 ip4 table-id 1 fib-idx 1
        ipip0 (up):
@@ -1065,8 +1065,8 @@ A more detailed description of this E2E test is provided under the link in the O
          ike-crypto-alg aes-cbc 256 ike-integ-alg sha1-96 ike-dh modp-2048
          esp-crypto-alg aes-cbc 256 esp-integ-alg sha1-96
          lifetime 0 jitter 0 handover 0 maxdata 0
-       
-        vpp# sh int addr
+      
+       vpp# sh int addr
        GigabitEthernetb6/0/0 (up):
          L3 192.168.0.77/24 ip4 table-id 1 fib-idx 1
        GigabitEthernetb6/0/1 (up):
@@ -1082,31 +1082,31 @@ A more detailed description of this E2E test is provided under the link in the O
      
      - EdgeB：
      
-     ```
-     vpp# sh ikev2 profile
-     profile ipsecsite_cnfvpp_ipsec_tunnelb_connB
-       auth-method shared-key-mic auth data 0123456789012345
-       local id-type fqdn data cnfvppb
-       remote id-type fqdn data cnfvppb
-       local traffic-selector addr 192.168.7.1 -192.168.7.254 port 0 - 65535 protocol 0
-       remote traffic-selector addr 192.168.5.1 -192.168.5.254 port 0 - 65535 protocol 0
-       responder GigabitEthernetb6/0/0 192.168.0.190
-       ike-crypto-alg aes-cbc 256 ike-integ-alg sha1-96 ike-dh modp-2048
-       esp-crypto-alg aes-cbc 256 esp-integ-alg sha1-96
-       lifetime 0 jitter 0 handover 0 maxdata 0
+       ```
+       vpp# sh ikev2 profile
+       profile ipsecsite_cnfvpp_ipsec_tunnelb_connB
+         auth-method shared-key-mic auth data 0123456789012345
+         local id-type fqdn data cnfvppb
+         remote id-type fqdn data cnfvppb
+         local traffic-selector addr 192.168.7.1 -192.168.7.254 port 0 - 65535 protocol 0
+         remote traffic-selector addr 192.168.5.1 -192.168.5.254 port 0 - 65535 protocol 0
+         responder GigabitEthernetb6/0/0 192.168.0.190
+         ike-crypto-alg aes-cbc 256 ike-integ-alg sha1-96 ike-dh modp-2048
+         esp-crypto-alg aes-cbc 256 esp-integ-alg sha1-96
+         lifetime 0 jitter 0 handover 0 maxdata 0
        
        vpp# sh int addr
-     GigabitEthernetb6/0/0 (up):
-       L3 192.168.0.76/24 ip4 table-id 1 fib-idx 1
-     GigabitEthernetb6/0/1 (up):
-       L2 bridge bd-id 1 idx 1 shg 0
-     local0 (dn):
-     loop0 (up):
-       L2 bridge bd-id 1 idx 1 shg 0 bvi
-       L3 172.30.30.1/24
-     tap0 (up):
-       L2 bridge bd-id 1 idx 1 shg 0
-     ipip0 (up):
+       GigabitEthernetb6/0/0 (up):
+         L3 192.168.0.76/24 ip4 table-id 1 fib-idx 1
+       GigabitEthernetb6/0/1 (up):
+         L2 bridge bd-id 1 idx 1 shg 0
+       local0 (dn):
+       loop0 (up):
+         L2 bridge bd-id 1 idx 1 shg 0 bvi
+         L3 172.30.30.1/24
+       tap0 (up):
+         L2 bridge bd-id 1 idx 1 shg 0
+       ipip0 (up):
      
      ```
 
