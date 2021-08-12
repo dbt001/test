@@ -1107,9 +1107,7 @@ A more detailed description of this E2E test is provided under the link in the O
        tap0 (up):
          L2 bridge bd-id 1 idx 1 shg 0
        ipip0 (up):
-     
-     ```
-
+       ```
 4. Ping app pod ip(any one ip) of Edge B inside app pod of Edge A:
 
    - Execute:
