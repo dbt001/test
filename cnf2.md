@@ -2,6 +2,7 @@
 SPDX-License-Identifier: Apache-2.0     
 Copyright (c) 2020 Intel Corporation  
 ```
+[TOC]
 <!-- omit in toc -->
 # Converged Edge Reference Architecture for SD-WAN(vpp based)
 - [Introduction](#introduction)
@@ -22,7 +23,7 @@ Copyright (c) 2020 Intel Corporation
   - [E2E Scenarios](#e2e-scenarios)
     - [Hardware Specification](#hardware-specification)
     - [Software Specification](#software-specification)
-    - [Scenario 1](#scenario 1 - Scenario A:Using Flavor to deploy on Hub Node)
+    - [Scenario 1](#Scenario 1 - Scenario A:Using Flavor to deploy on Hub Node)
     - [Scenario 2](#scenario-2)
     - [Scenario 3](#scenario-3)
     - [Scenario 4](#scenario-4)    
