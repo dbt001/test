@@ -22,7 +22,7 @@ Copyright (c) 2020 Intel Corporation
   - [E2E Scenarios](#e2e-scenarios)
     - [Hardware Specification](#hardware-specification)
     - [Software Specification](#software-specification)
-    - [Scenario 1](#scenario-1)
+    - [Scenario 1](#scenario 1 - Scenario A:Using Flavor to deploy on Hub Node)
     - [Scenario 2](#scenario-2)
     - [Scenario 3](#scenario-3)
     - [Scenario 4](#scenario-4)    
@@ -421,7 +421,7 @@ A more detailed description of this E2E test is provided under the link in the O
      hosts:
    ptp_slave_group:
      hosts:
-  ```
+   ```
 
 5. Run _`./deploy.py`_ and wait till it ends successfully.
 
