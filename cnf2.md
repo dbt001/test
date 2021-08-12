@@ -398,29 +398,29 @@ A more detailed description of this E2E test is provided under the link in the O
 
 4. Modify _inventory.yml_, flavor is **sdwan** and single_node_deployment is **true**:
 
-  ```yaml
- all:
-   vars:
+   ```yaml
+   all:
+     vars:
      cluster_name: cluster_test    # NOTE: Use `_` instead of spaces.
      flavor: sdwan                 # NOTE: Flavors can be found in `flavors` directory.
      single_node_deployment: true  # Request single node deployment (true/false).
      limit:                        # Limit ansible deployment to certain inventory group or hosts
- controller_group:
-   hosts:
-     controller:
-       ansible_host: 192.168.0.165
-       ansible_user: openness
- edgenode_group:
-   hosts:
-     node01:
-       ansible_host: 192.168.0.165
-       ansible_user: openness
- edgenode_vca_group:
-   hosts:
- ptp_master:
-   hosts:
- ptp_slave_group:
-   hosts:
+   controller_group:
+     hosts:
+       controller:
+         ansible_host: 192.168.0.165
+         ansible_user: openness
+   edgenode_group:
+     hosts:
+       node01:
+         ansible_host: 192.168.0.165
+         ansible_user: openness
+   edgenode_vca_group:
+     hosts:
+   ptp_master:
+     hosts:
+   ptp_slave_group:
+     hosts:
   ```
 
 5. Run _`./deploy.py`_ and wait till it ends successfully.
