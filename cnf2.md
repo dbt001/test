@@ -380,21 +380,21 @@ A more detailed description of this E2E test is provided under the link in the O
    
 3. Modify _flavors/sdwan/all.yml_  for sdewan vpp cnf(vpp) hub deployment：
 
-  ```yaml
- ## sde-wan edge enable
- sdewan_edge_enable: False
-
- ## sde-wan hub enable
- sdewan_hub_enable: False
-
- ## sde-wan vpp enable
- sdewan_controller_enable: True
- sdewan_edge_vpp_enable: False
- sdewan_hub_vpp_enable: True
- 
- ## fixme: input your own git repo token here
- git_repo_token: "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"
-  ```
+   ```yaml
+   ## sde-wan edge enable
+   sdewan_edge_enable: False
+   
+   ## sde-wan hub enable
+   sdewan_hub_enable: False
+   
+   ## sde-wan vpp enable
+   sdewan_controller_enable: True
+   sdewan_edge_vpp_enable: False
+   sdewan_hub_vpp_enable: True
+   
+   ## fixme: input your own git repo token here
+   git_repo_token: "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"
+   ```
 
 4. Modify _inventory.yml_, flavor is **sdwan** and single_node_deployment is **true**:
 
