@@ -1466,13 +1466,15 @@ Data flow from EdgeA -> Hub -> EdgeB through IPSec Tunnel with 3 single cluster 
    ```
 
 ## References
+- [OpenWrt documentation](https://github.com/otcshare/ido-specs/blob/master/doc/reference-architectures/cera_sdwan.md)
+- [FD.io](https://fd.io/)
+- [Calico CNI](https://docs.projectcalico.org/about/about-calico)
 - [ICN SDEWAN documentation](https://wiki.akraino.org/display/AK/ICN+-+SDEWAN)
 - [ovn4nfv k8s plugin documentation](https://github.com/opnfv/ovn4nfv-k8s-plugin)
 - [Service Function Chaining (SFC) Setup](https://github.com/opnfv/ovn4nfv-k8s-plugin/blob/master/demo/sfc-setup/README.md)
 - [Utilizing a Service Mesh for Edge Services in OpenNESS](https://github.com/otcshare/ido-specs/blob/master/doc/applications/openness_service_mesh.md)
-- [Using Intel® Movidius™ Myriad™ X High Density Deep Learning (HDDL) solution in OpenNESS](https://github.com/otcshare/ido-specs/blob/master/doc/building-blocks/enhanced-platform-awareness/openness_hddl.md)
 - [Node Feature Discovery support in OpenNESS](https://github.com/otcshare/ido-specs/blob/master/doc/building-blocks/enhanced-platform-awareness/openness-node-feature-discovery.md)
-- [OpenVINO™ Sample Application in OpenNESS](https://github.com/otcshare/ido-specs/blob/78d7797cbe0a21ade2fdc61625c2416d8430df23/doc/applications/openness_openvino.md)
+
 
 ## Acronyms
 
@@ -1505,3 +1507,4 @@ Data flow from EdgeA -> Hub -> EdgeB through IPSec Tunnel with 3 single cluster 
 | EWO CNF | <p>To represent OpenWRT based CNF. </p>|
 | SDEWAN CRD Controller | <p>is implemented as k8s CRD Controller, it manages CRDs (e.g. Firewall related CRDs, Mwan3 related CRDs and IPsec related CRDs etc.) and internally calls SDEWAN Restful API to do CNF configuration. And a remote client (e.g. SDEWAN Central Controller) can manage SDEWAN CNF configuration through creating/updating/deleting SDEWAN CRs. </p>|
 | OpenWRT based CNF | <p>The CNF is implemented based on OpenWRT, it enhances OpenWRT Luci web interface with SDEWAN controllers to provide Restful API for network functions configuration and control.</p>|
+| VPP based CNF | <p>The CNF is implemented based on VPP, it implements web interface with SDEWAN controllers to provide Restful API for network functions configuration and control.</p>|
