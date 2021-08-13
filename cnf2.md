@@ -534,7 +534,7 @@ A more detailed description of this E2E test is provided under the link in the O
 
 在这个场景中，OpenNESS Edge Node采用单节点集成方式运行，SDEWAN CNF将以POD的方式运行在OpenNESS Hub Node，同时将对SDEWAN CNF配置WAN接口，验证SDEWAN POD成功运行，并获取到IP地址.
 
-![OpenNESS SD-WAN Scenario 2 ](sdwan-images/sdewan-vpp-scenario1.png)
+![OpenNESS SD-WAN Scenario 2 ](sdwan-images/sdewan-vpp-scenario2.png)
 
 A more detailed description of this E2E test is provided under the link in the OpenNESS documentation for this SD-WAN [scenario](https://github.com/otcshare/x-test/blob/br_tieto_pr_test_plan/test_plans/ned/integration/ts46-sdwan-vpp.md).
 
