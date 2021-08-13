@@ -18,18 +18,14 @@ Copyright (c) 2020 Intel Corporation
   - [Converged Edge Reference Architectures (CERA)](#converged-edge-reference-architectures-cera)
     - [SD-WAN Edge Reference Architecture](#sd-wan-edge-reference-architecture)
     - [SD-WAN Hub Reference Architecture](#sd-wan-hub-reference-architecture)
-- [Deployment](#deployment)
+- [Deployment And Configuration](#deployment-and-configuration)
   - [E2E Scenarios](#e2e-scenarios)
     - [Hardware Specification](#hardware-specification)
     - [Software Specification](#software-specification)
     - [Scenario 1 : Using Flavor to deploy on Hub Node](#scenario-1-using-flavor-to-deploy-on-hub-node)
     - [Scenario 2 : Using Flavor to deploy on Edge Node](#scenario-2-using-flavor-to-deploy-on-edge-node)
     - [Scenario 3 : Verify Data Flow](#scenario-3-verify-data-flow)
-    - [Scenario 4](#scenario-4)    
-  - [EWO Configuration](#ewo-configuration)
-    - [NodeSelector For CNF](#nodeselector-for-cnf)
-    - [Network and CNF Interface](#network-and-cnf-interface)
-    - [Tunnel](#tunnel)
+    - [Scenario 4 : Verify Data Flow with 3 Single Cluster Manually](#scenario-4-verify-data-flow-with-3-single-cluster-manually)    
 - [Resource Consumption](#resource-consumption)
   - [Methodology](#methodology)
   - [Results](#results)
@@ -1159,371 +1155,311 @@ A more detailed description of this E2E test is provided under the link in the O
               1             ip4-icmp-error             destination unreachable response sent
      ```
 
-#### Scenario 4
+#### Scenario 4 : Verify Data Flow with 3 Single Cluster Manually
 场景4在场景3的基础上进一步验证Overlay network的数据流量通路，采用Hub-Spoke组网模型，需要同时在Hub cluster和两个Edge cluster中部署SDEWAN CNF，并使能IKEv2和IPsec功能，验证流量从EdgeA cluster app1 pod，经Hub cluster，到达EdgeB cluster app2 pod的通路可达性。
 
 ![OpenNESS SD-WAN Scenario 3 ](sdwan-images/sdewan-vpp-scenario4.png)
 
 ##### Prerequisites
 
-1. Deploy sdewan cnf using flavor on 3 single Edge and Hub nodes according to scenario A and B.
-2. Independent of Edge and Hub cluster, Overlay Controller has been deployed sucessfuly on Kubernetes platform.
+1. Independent of Edge and Hub cluster, Overlay Controller has been deployed sucessfuly on Kubernetes platform.
+2. `otcshare/ido-converged-edge-experience-kits` checked out branch *br_tieto_ido-ewo* on all edges and Hub.
+3. Use command `git submodule update --init`  checkout `ceek` folder.
+4. SSH key generated & copied for the remote server with `ssh-keygen` and `ssh-copy-id nodename@ip`
+5. Configure `ansible_host` and `ansible_user` for `controller_group` and `edgenode_group` in `inventory.yml` file under `/ido-converged-edge-experience-kits/`.
+6. Set `git_repo_token` in _ceek/inventory/default/group_vars/all/10-default.yml_
+7. Current time on machine must be set.
+8. NTP/time role enabled in _group_vars/all/10-default.yml_ in _Network Time Protocol (NTP)_ section.
+9. NTP server has to be specified in _ceek/inventory/default/group_vars/all/10-default.yml_ in list _ntp_servers e.g. ntp_servers: [" 0.centos.pool.ntp.org"]_.
+10. Set proper proxy if need.
+11. Checkout files `ngfw.yaml` is store in `ts_resources/ts_resources/ts46_files/`
 
 ##### Test Steps
 
-1. Configing IKEv2 IPSec for 3 single Edge and Hub nodes on Overlay Controller：
-	- Edge nodeA:
-	```yaml
-	to add configuration details here
-	```
-	- Edge nodeB:
-	```yaml
-	to add configuration details here
-	```
-	- Hub node:
-	```yaml
-	to add configuration details here
-	``` 
-2. Ping app pod ip(any one ip) of Edge B inside app pod of Edge A:
-   - Execute:
-	 ```shell
-     on Edge node B:
-	 root@ceekvpp:~# kubectl get po -A -o wide|grep harbo
-     harbor          harbor-app-harbor-chartmuseum-575f7c84bd-rhnr8     1/1     Running   2          39h   10.245.95.247   ceekvpp   <none>           <none>
-     harbor          harbor-app-harbor-clair-779df4555b-4z7w4           2/2     Running   244        39h   10.245.95.253   ceekvpp   <none>           <none>
-     harbor          harbor-app-harbor-core-865d69fc9f-jlt9m            1/1     Running   2          39h   10.245.95.244   ceekvpp   <none>           <none>
-     harbor          harbor-app-harbor-database-0                       1/1     Running   2          39h   10.245.95.238   ceekvpp   <none>           <none>
-     harbor          harbor-app-harbor-jobservice-79996b68f6-bm2gg      1/1     Running   4          39h   10.245.95.246   ceekvpp   <none>           <none>
-     harbor          harbor-app-harbor-nginx-7c5748b8b7-lb4xn           1/1     Running   3          39h   10.245.95.251   ceekvpp   <none>           <none>
-     harbor          harbor-app-harbor-notary-server-6fff5467cb-s6nxx   1/1     Running   2          39h   10.245.95.235   ceekvpp   <none>           <none>
-	 on Edge node A:
-     root@ceekvpp:~# kubectl get pod -n harbor
-     NAME                                               READY   STATUS    RESTARTS   AGE
-     harbor-app-harbor-chartmuseum-575f7c84bd-rhnr8     1/1     Running   2          39h
-     harbor-app-harbor-clair-779df4555b-4z7w4           2/2     Running   244        39h
-     harbor-app-harbor-core-865d69fc9f-jlt9m            1/1     Running   2          39h
-     root@ceekvpp:~# kubectl exec -it harbor-app-harbor-chartmuseum-575f7c84bd-rhnr8 -c sdewan -- ping 10.245.95.247
-	 ```
-   - Example output:
+1. Hub：
+
+   - Using flavor sdwan to deploy Hub NodeC,  references **ITP/NED/46/01**, different configurations like as:
+
+     - Config two *ipsec_rules* *profiles* as responder
+     - enable_dhcp: false 
+     - Config *static_ip_address*, that is the same ip network segment with Wan GW(such as 192.168.0.xx)
+     - remote: %any
+
+     ```yaml
+     _sdewan_cnfvpp_cfg:
+       devs:
+         - "0000:66:00.1"
+         - "0000:66:00.2"
+       wan:
+         - name: GigabitEthernet66/0/1
+           static_ip_address: 192.168.0.10
+           enable_default_gateway: true
+           preference: 0
+           weight: 1
+           enable_dhcp: true
+           enable_nat: true
+         - name: GigabitEthernet66/0/2
+           static_ip_address: 192.168.0.20
+           enable_default_gateway: true
+           preference: 10
+           weight: 10
+           enable_dhcp: true
+           enable_nat: true
+       gateway_tap:
+         vpp_ip_address: 169.254.20.1
+         host_ip_address: 169.254.20.5/24
+       metadata:
+         name: sdewan-cnfvpp-pod
+         namespace: cnfvpp
+         labels: sdewan-cnfvpp-pod
+         cert: cnf-default-cert
+         auth:
+           name: cnf-default-auth
+           user: admin
+           pwd: admin
+       nodeSelectorLabelName: "sdewan-cnfvpp-node"
+       nodeSelectorLabelValue: "controller"
+       resources:
+         limits:
+           hugepages: 200Mi
+           memory: 500Mi
+         requests:
+           cpu: 150m
+       cpu:
+         maincore: 0
+         corelist_workers: 
+       image:
+         sdewan_cnfvpp_image: sdewan-cnfvpp-service
+       enable_ipsec: true
+       ipsec_rules:
+         - name: cnfvpp_ipsec_tunnelA
+           remote: 192.168.1.64
+           pre_shared_key: "0123456789012345"
+           local_identifier: cnfvppA
+           remote_identifier: cnfvppA
+           local_subnet: 169.254.20.1/24
+           remote_sourceip: "169.254.21.1-169.254.21.254"
+           remote_subnet: 169.254.21.1/24
+           local_sourceip: "169.254.20.1-169.254.20.254"
+         - name: cnfvpp_ipsec_tunnelB
+           remote: 192.168.0.64
+           pre_shared_key: "0123456789012345"
+           local_identifier: cnfvppB
+           remote_identifier: cnfvppB
+           local_subnet: 169.254.20.1/24
+           remote_sourceip: "169.254.22.1-169.254.22.254"
+           remote_subnet: 169.254.22.1/24
+           local_sourceip: "169.254.20.1-169.254.20.254"
      ```
-     ping 10.245.95.247 56(84) bytes of data.
-	 64 bytes from 10.245.95.247: icmp_seq=1 ttl=115 time=137 ms
-     64 bytes from 10.245.95.247: icmp_seq=2 ttl=115 time=351 ms
-	 ```
-3. Check the interface address result inside cnf pod of 3 nodes:
-   - Execute:
-	 ```shell
-     root@ceekvpp:~# kubectl get pod
-     NAME                     READY   STATUS    RESTARTS   AGE
-     sdewan-9cd4c5c8c-8c886   2/2     Running   0          20h
-	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh int addr
-	 ```
+     
+   - Run `./deploy.py` and wait till it ends successfully.
+   
+2. EdgeA:
+
+   - Using flavor sdwan to deploy EdgeA,  references **ITP/NED/46/02**, Config one *ipsec_rules* *profiles* as initiate， different configurations like as:
+
+     - *enable_dhcp*: true
+     - *static_ip_address**: no need to set*
+     - *remote*: set Hub WAN interface ip for Edge A， such as 192.168.0.10
+     - *vpp_ip_address*:  as IPSec local subnet ip segment
+
+     ```yaml
+     _sdewan_cnfvpp_cfg:
+       devs:
+         - "0000:66:00.1"
+         - "0000:66:00.2"
+       wan:
+         - name: GigabitEthernet66/0/1
+           static_ip_address: 
+           enable_default_gateway: true
+           preference: 0
+           weight: 1
+           enable_dhcp: true
+           enable_nat: true
+       lan:
+         - name: GigabitEthernet66/0/2
+       dhcp:
+         server:
+           ippool_start: 172.30.10.100
+           ippool_end: 172.30.10.200
+           ippool_gateway: 172.30.10.1
+           ippool_mask: 255.255.255.0
+           ippool_leasetime: 28800
+           ippool_dns: 8.8.8.8
+           ippool_address: 172.30.10.4/24
+           ippool_subnet: 172.30.10.0/24
+       gateway_tap:
+         vpp_ip_address: 169.254.21.1
+         host_ip_address: 169.254.21.5/24
+       metadata:
+         name: sdewan-cnfvpp-pod
+         namespace: cnfvpp
+         labels: sdewan-cnfvpp-pod
+         cert: cnf-default-cert
+         auth:
+           name: cnf-default-auth
+           user: admin
+           pwd: admin
+       nodeSelectorLabelName: "sdewan-cnfvpp-node"
+       nodeSelectorLabelValue: "controller"
+       resources:
+         limits:
+           hugepages: 200Mi
+           memory: 500Mi
+         requests:
+           cpu: 150m
+       cpu:
+         maincore: 0
+         corelist_workers:
+       image:
+         sdewan_cnfvpp_image: sdewan-cnfvpp-service
+       enable_ipsec: true
+       ipsec_rules:
+         - name: cnfvpp_ipsec_tunnelA
+           remote: 192.168.0.10
+           pre_shared_key: "0123456789012345"
+           local_identifier: cnfvppA
+           remote_identifier: cnfvppA
+           local_subnet: 169.254.21.1/24
+           remote_sourceip: "169.254.20.1-169.254.20.254"
+           remote_subnet: 169.254.20.1/24
+           local_sourceip: "169.254.21.1-169.254.21.254"
+     
+     ```
+
+   - Run `./deploy.py` and wait till it ends successfully.
+
+3. EdgeB:
+   - Using flavor sdwan to deploy EdgeA,  references **ITP/NED/46/02**, Config one *ipsec_rules* *profiles* as initiate， different configurations like as:
+
+     - *enable_dhcp*: true
+     - *static_ip_address**: no need to set***
+     - remote*: set Hub WAN interface ip for Edge B， such as 192.168.0.20*
+     - vpp_ip_address*:  as IPSec local subnet ip segment
+
+     ```yaml
+     _sdewan_cnfvpp_cfg:
+       devs:
+         - "0000:66:00.1"
+         - "0000:66:00.2"
+       wan:
+         - name: GigabitEthernet66/0/1
+           static_ip_address: 
+           enable_default_gateway: true
+           preference: 0
+           weight: 1
+           enable_dhcp: true
+           enable_nat: true
+       lan:
+         - name: GigabitEthernet66/0/2
+       dhcp:
+         server:
+           ippool_start: 172.30.10.100
+           ippool_end: 172.30.10.200
+           ippool_gateway: 172.30.10.1
+           ippool_mask: 255.255.255.0
+           ippool_leasetime: 28800
+           ippool_dns: 8.8.8.8
+           ippool_address: 172.30.10.4/24
+           ippool_subnet: 172.30.10.0/24
+       gateway_tap:
+         vpp_ip_address: 169.254.22.1
+         host_ip_address: 192.254.22.5/24
+       metadata:
+         name: sdewan-cnfvpp-pod
+         namespace: cnfvpp
+         labels: sdewan-cnfvpp-pod
+         cert: cnf-default-cert
+         auth:
+           name: cnf-default-auth
+           user: admin
+           pwd: admin
+       nodeSelectorLabelName: "sdewan-cnfvpp-node"
+       nodeSelectorLabelValue: "controller"
+       resources:
+         limits:
+           hugepages: 200Mi
+           memory: 500Mi
+         requests:
+           cpu: 150m
+       cpu:
+         maincore: 0
+         corelist_workers: 
+       image:
+         sdewan_cnfvpp_image: sdewan-cnfvpp-service
+       enable_ipsec: true
+       ipsec_rules:
+         - name: cnfvpp_ipsec_tunnelB
+           remote: 192.168.0.20
+           pre_shared_key: "0123456789012345"
+           local_identifier: cnfvppB
+           remote_identifier: cnfvppB
+           local_subnet: 169.254.22.1/24
+           remote_sourceip: "169.254.20.1-169.254.20.254"
+           remote_subnet: 169.254.20.1/24
+           local_sourceip: "169.254.22.1-169.254.22.254"
+     
+     ```
+
+   - Run `./deploy.py` and wait till it ends successfully.
+
+4. Deploy app pod (such as ngfw pod) on the EdgeA and EdgeB，with  `kubectl apply -f ngfw.yaml`,  and check pod with `kubectl get po -n default -o wide`,  the result should be output: 
+
+   On the EdgeA:
+
+   ```
+   openness@controller:~$  kubectl get po -n default -o wide
+   NAME                    READY   STATUS    RESTARTS   AGE    IP             NODE         NOMINATED NODE   READINESS GATES
+   ngfw-759d4d7d4d-2q88v   1/1     Running   0          3d2h   10.245.49.35   controller   <none>           <none>
+   ```
+
+   On the EdgeB:
+
+   ```
+   openness@controller:~$  kubectl get po -n default -o wide
+   NAME                    READY   STATUS    RESTARTS   AGE    IP             NODE         NOMINATED NODE   READINESS GATES
+   ngfw-759d4d7d4d-2q56v   1/1     Running   0          3d2h   10.245.49.48   controller   <none>           <none>
+   ```
+
+5. Check result on hub, EdgeA and Edge B separatly.
+
+   Run the following commands on both Edge nodes and Hub node:
+
+   ```
+   openness@controller:~$ kubectl get po -n cnfvpp
+   NAME                                 READY   STATUS    RESTARTS   AGE
+   sdewan-cnfvpp-pod-68d99d5d4c-xjxtn   2/2     Running   0          10m
+   kubectl get pod -n default -o wide
+   NAME                    READY   STATUS    RESTARTS   AGE   IP       
+   ngfw-759d4d7d4d-2q88v   1/1     Running   0          47m   10.245.49.48      
+   openness@controller:~$ kubectl get po -n sdewan-system
+   NAME                                 READY   STATUS    RESTARTS   AGE
+   sdewan-controller-8467568d79-7vcqf   2/2     Running   0          51m
+   ```
+   Run the following command on Edge nodes:
+   ```
+   openness@controller:~$ kubectl get pod -n default -o wide
+   NAME                    READY   STATUS    RESTARTS   AGE   IP
+   ngfw-759d4d7d4d-2q88v   1/1     Running   0          47m   10.245.49.50
+   ```
+
+6. Ping test,  as below *10.245.49.48* is ngfw pod ip of EdgeB  : 
+
+   - Execute on Edge node A:
+
+   ```shell
+   openness@controller:~$ kubectl exec -it ngfw-759d4d7d4d-2q88v  -- ping 10.245.49.48 -c 4
+   ```
+
    - Example output:
-      ```
-      ‘ipip0’ interface is existing.
-	  ```
-4. Check the er result inside cnf pod of 3 nodes:
-   - Execute:
-	 ```shell
-	 root@ceekvpp:~#kubectl exec -it sdewan-9cd4c5c8c-8c886 -c sdewan -- vppctl sh er
-	 ```
-   - Example output:
-      ```
-      contains ‘esp4-decrypt-tun’, ‘esp4-encrypt-tun’
-	  ```
 
-### EWO Configuration - [ need to refer test readme ]
-There are five types configuration for EWO. With these configurations, it is easy to deploy the above scenarios automatically.
-
-#### NodeSelector For CNF
-
-![EWO NodeSelector](sdwan-images/ewo-node-select.png)
-This configuration is used to choose a node to install CNFs.
-For this example, we want to setup a cnf on node1 and another cnf on node3, the configurations snippet as below:
-
-`inventory/default/host_vars/node1/30-ewo.yml`
-```bash
-sdwan_labels: '{"sdwanPurpose": "infra", "sdwanProvider": "operator_A"}'
-
-```
-
-and
-`inventory/default/host_vars/node3/30-ewo.yml`
-```bash
-sdwan_labels: '{"sdwanProvider": "operator_B"}'
-
-```
-
-**NOTE** An alternative configuration: You can also define the sdwan_labels in `inventory.yml`. If only deploy cnfs on node3, the snippet configuration as follow:
-
-```bash
-edgenode_group:
-  hosts:
-    node01:
-      ansible_host: 172.16.0.1
-      ansible_user: openness
-    node02:
-      ansible_host: 172.16.0.2
-      ansible_user: openness
-    node03:
-      ansible_host: 172.16.0.3
-      ansible_user: openness
-      sdwan_labels: {"sdwanProvider": "operator_A"}
-```
-
-#### Network and CNF Interface
-![EWO Network and CNF Map](sdwan-images/ewo-network-cnf-interface.png)
-This configuration is used to setup ovn WAN or cluster networks and attach the cnfs to the network.
-For this example, we want to setup 4 networks with different color lines (black/yellow/orage/purple). The balck and yellow are 2 different WAN networks. The configurations snippet as below:
-
-
-in `inventory/default/host_vars/node1/30-ewo.yml`, `flavors/sdewan-edge/all.yml`(edge cluster as example) if only set cnfs on one node.
-```bash
-pnet1_name: pnetwork1
-pnet2_name: pnetwork2
-onet1_name: onetwork1
-
-# A list of network definitions. It can be provider network or ovn4nfv network.
-# ovn4nfv should be configured as the secondary CNI for cluster network in this
-# situation. And the user can use the configuration to customize networks
-# according to needs.
-networks:
-  - networkname: "{{ pnet1_name }}"
-    subnname: "pnet1_subnet"
-    subnet: 10.10.1.0/24
-    gateway: 10.10.1.1
-    excludeIps: 10.10.1.2..10.10.1.9
-    providerNetType: "DIRECT"
-    providerInterfaceName: "p1"
-  - networkname: "{{ pnet2_name }}"
-    subnname: "pnet2_subnet"
-    subnet: 10.10.2.0/24
-    gateway: 10.10.2.1
-    excludeIps: 10.10.2.2..10.10.2.9
-    providerNetType: "DIRECT"
-    providerInterfaceName: "p2"
-  - networkname: "{{ onet1_name }}"
-    subnname: "onet1_subnet"
-    subnet: 10.10.3.0/24
-    gateway: 10.10.3.1
-    excludeIps: 10.10.3.2..10.10.3.9
-    providerNetType: "NONE"
-
-# CNF pod info
-cnf_config:
- - name: "cnf1"
-   interfaces:
-     - ipAddress: "10.10.1.5"
-       name: "net2"
-       belongto: "{{ pnet1_name }}"
-     - ipAddress: "10.10.1.6"
-       name: "net3"
-       belongto: "{{ pnet2_name }}"
-     - ipAddress: "10.10.3.5"
-       name: "net4"
-       belongto: "{{ onet1_name }}"
-```
-
-#### Tunnel
-![EWO Tunnel](sdwan-images/ewo-tunnel-setup.png)
-This configuration is used to setup an IPsec tunnel between 2 clusters.
-The configurations snippet for the edge cluster(left) as below:
-
-in `inventory/default/host_vars/node1/30-ewo.yml`, or `flavors/sdewan-edge/all.yml`(edge cluster as example) if only set cnfs on one node.
-```bash
-
-pnet1_name: pnetwork1
-# A list of network definitions. It can be provider network or ovn4nfv network.
-# ovn4nfv should be configured as the secondary CNI for cluster network in this
-# situation. And the user can use the configuration to customize networks
-# according to needs.
-networks:
-  - networkname: "{{ pnet1_name }}"
-    subnname: "pnet1_subnet"
-    subnet: 10.10.1.0/24
-    gateway: 10.10.1.1
-    excludeIps: 10.10.1.2..10.10.1.9
-    providerNetType: "DIRECT"
-    providerInterfaceName: "p1"
-
-# overlay network
-O_TUNNEL_NET: 172.16.30.0/24
-
-# CNF pod info
-cnf_config:
- - name: "cnf1"
-   interfaces:
-     - ipAddress: "10.10.1.5"
-       name: "net2"
-       belongto: "{{ pnet1_name }}"
-   rules:
-     - name: tunnel1
-       type: tunnelhost
-       local_identifier: 10.10.1.5
-       remote: 10.10.2.5
-       remote_subnet: "{{ O_TUNNEL_NET }},10.10.2.5/32"
-       remote_sourceip:
-       local_subnet:
-```
-
-The configurations snippet for the hub cluster(right) as below:
-in `inventory/default/host_vars/node1/30-ewo.yml`, or `flavors/sdewan-edge/all.yml`(edge cluster as example) if only set cnfs on one node.
-```bash
-pnet1_name: pnetwork1
-
-# A list of network definitions. It can be provider network or ovn4nfv network.
-# ovn4nfv should be configured as the secondary CNI for cluster network in this
-# situation. And the user can use the configuration to customize networks
-# according to needs.
-networks:
-  - networkname: "{{ pnet1_name }}"
-    subnname: "pnet2_subnet"
-    subnet: 10.10.2.0/24
-    gateway: 10.10.2.1
-    excludeIps: 10.10.2.2..10.10.2.9
-    providerNetType: "DIRECT"
-    providerInterfaceName: "p1"
-
-# overlay network
-O_TUNNEL_NET: 172.16.30.0/24
-
-# CNF pod info
-cnf_config:
- - name: "cnf1"
-   interfaces:
-     - ipAddress: "10.10.2.5"
-       name: "net2"
-       belongto: "{{ pnet1_name }}"
-   rules:
-     - name: tunnel1
-       type: tunnelsite
-       local_identifier:
-       local_sourceip:
-       remote_sourceip: "{{ O_TUNNEL_NET }}"
-       local_subnet: "{{ O_TUNNEL_NET }},10.10.2.5/32"
-```
-
-#### SNAT
-![EWO SNAT](sdwan-images/ewo-snat-setup.png)
-This configuration is used to setup an SNAT when an app pod in clusters want to access the external network, for example it wants to access the service on internet.
-The configurations snippet as below:
-
-in `inventory/default/host_vars/node1/30-ewo.yml`, or `flavors/sdewan-edge/all.yml`(edge cluster as example) if only set cnfs on one node.
-```bash
-pnet1_name: pnetwork1
-pnet2_name: pnetwork2
-
-# A list of network definitions. It can be provider network or ovn4nfv network.
-# ovn4nfv should be configured as the secondary CNI for cluster network in this
-# situation. And the user can use the configuration to customize networks
-# according to needs.
-networks:
-  - networkname: "{{ pnet1_name }}"
-    subnname: "pnet1_subnet"
-    subnet: 10.10.1.0/24
-    gateway: 10.10.1.1
-    excludeIps: 10.10.1.2..10.10.1.9
-    providerNetType: "DIRECT"
-    providerInterfaceName: "p1"
-  - networkname: "{{ pnet2_name }}"
-    subnname: "pnet2_subnet"
-    subnet: 10.10.2.0/24
-    gateway: 10.10.2.1
-    excludeIps: 10.10.2.2..10.10.2.9
-    providerNetType: "DIRECT"
-    providerInterfaceName: "p2"
-
-# CNF pod info
-cnf_config:
- - name: "cnf1"
-   interfaces:
-     - ipAddress: "10.10.1.5"
-       name: "net2"
-       belongto: "{{ pnet1_name }}"
-     - ipAddress: "10.10.1.6"
-       name: "net3"
-       belongto: "{{ pnet2_name }}"
-     - name: snat1
-       type: snat
-       network: 10.10.1.0/24
-       private: 10.10.2.6
-       via: 10.10.1.5
-       provider: "{{ pnet1_name }}"
-```
-
-#### DNAT
-![EWO DNAT](sdwan-images/ewo-snat-setup.png)
-This configuration is used to setup an DNAT when outer traffic comes into the cluster, for example, when an app pod exposes a service to internet.
-The configurations snippet as below:
-
-in `inventory/default/host_vars/node1/30-ewo.yml`, or `flavors/sdewan-edge/all.yml`(edge cluster as example) if only set cnfs on one node.
-```bash
-pnet1_name: pnetwork1
-pnet2_name: pnetwork2
-
-# A list of network definitions. It can be provider network or ovn4nfv network.
-# ovn4nfv should be configured as the secondary CNI for cluster network in this
-# situation. And the user can use the configuration to customize networks
-# according to needs.
-networks:
-  - networkname: "{{ pnet1_name }}"
-    subnname: "pnet1_subnet"
-    subnet: 10.10.1.0/24
-    gateway: 10.10.1.1
-    excludeIps: 10.10.1.2..10.10.1.9
-    providerNetType: "DIRECT"
-    providerInterfaceName: "p1"
-  - networkname: "{{ pnet2_name }}"
-    subnname: "pnet2_subnet"
-    subnet: 10.10.2.0/24
-    gateway: 10.10.2.1
-    excludeIps: 10.10.2.2..10.10.2.9
-    providerNetType: "DIRECT"
-    providerInterfaceName: "p2"
-
-# CNF pod info
-cnf_config:
- - name: "cnf1"
-   interfaces:
-     - ipAddress: "10.10.1.5"
-       name: "net2"
-       belongto: "{{ pnet1_name }}"
-     - ipAddress: "10.10.1.6"
-       name: "net3"
-       belongto: "{{ pnet2_name }}"
-     - name: dnat1
-       type: dnat
-       from: 10.10.1.6
-       ingress: 10.10.2.5
-       network: 10.10.2.0/24
-       provider: "{{ pnet1_name }}"
-```
-
-## Resource Consumption
-### Methodology
-
-The resource consumption of CPU and memory was measured. 
-
-To measure the CPU and memory resource consumption of the Kubernetes cluster, the “kubctl top pod -A” command was invoked both on the Edge node and the Edge Hub. 
-
-The resource consumption was measured twice:
-
-  - With no IPerf traffic; 
-
-  - With IPerf traffic  from Edge2-UE to Edge1-UE.
-
-To measure total memory usage, the command “free -h” was used.
-
-### Results
-
-| Option                 | Resource      | Edge               | Hub                                  |
-| ---------------------- | ------------- | ------------------ | ------------------------------------ |
-| Without traffic        | CPU           | 339m (0.339 CPU)   |  327m (0.327 CPU)                    |
-|                        | RAM           | 2050Mi (2.05G)     |  2162Mi (2.162G)                     |
-|                        | Total mem used| 3.1G               |  3.1G                                |
-| With Iperf traffic     | CPU           | 382m(0.382 CPU)    |  404m(0.404 CPU)                     |
-|                        | RAM           | 2071Mi(2.071G)     |  2186Mi(2.186G)                      |
-|                        | Total mem used| 3.1G               |  3.1                                 |
+   ```
+   ping 10.245.49.48 56(84) bytes of data.
+    64 bytes from 10.245.49.48: icmp_seq=1 ttl=115 time=137 ms
+    64 bytes from 10.245.49.48: icmp_seq=2 ttl=115 time=351 ms
+    64 bytes from 10.245.49.48: icmp_seq=1 ttl=115 time=139 ms
+    64 bytes from 10.245.49.48: icmp_seq=2 ttl=115 time=301 ms
+   ```
 
 ## References
 - [ICN SDEWAN documentation](https://wiki.akraino.org/display/AK/ICN+-+SDEWAN)
