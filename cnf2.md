@@ -267,11 +267,12 @@ If there is no WAN Switch/Router equipment in the lab environment, DHCP server c
 
 #### Scenario 1 : Using Flavor to deploy on Hub Node
 
-场景1用于验证使用Flavor的方式成功在Edge Node部署SDEWAN CNF.  
+场景1用于验证使用Flavor的方式成功在Hub Node部署SDEWAN CNF.  
 
-在这个场景中，OpenNESS Edge Node采用单节点集成方式运行，SDEWAN CNF将以POD的方式运行在OpenNESS Edge Node，同时将对SDEWAN CNF配置WAN接口，验证SDEWAN POD成功运行，并获取到IP地址.
+在这个场景中，OpenNESS Edge采用单节点集成方式运行，SDEWAN CNF将以POD的方式运行在OpenNESS Hub，同时将对SDEWAN CNF配置WAN接口，验证SDEWAN POD成功运行，并获取到IP地址.
 
 ![OpenNESS SD-WAN Scenario 1 ](sdwan-images/sdewan-vpp-scenario1.png)
+Support flavor to deploy SDEWAN VPP CNF automatically on Hub Node. Hub Single Cluster contains two wan ports, and one management port
 
 A more detailed description of this E2E test is provided under the link in the OpenNESS documentation for this SD-WAN [scenario](https://github.com/otcshare/x-test/blob/br_tieto_pr_test_plan/test_plans/ned/integration/ts46-sdwan-vpp.md).
 
@@ -530,11 +531,12 @@ A more detailed description of this E2E test is provided under the link in the O
     ```
 
 #### Scenario 2 : Using Flavor to deploy on Edge Node
-场景2用于验证使用Flavor的方式成功在Hub Node部署SDEWAN CNF.  
+场景2用于验证使用Flavor的方式成功在Edge Node部署SDEWAN CNF.  
 
-在这个场景中，OpenNESS Edge Node采用单节点集成方式运行，SDEWAN CNF将以POD的方式运行在OpenNESS Hub Node，同时将对SDEWAN CNF配置WAN接口，验证SDEWAN POD成功运行，并获取到IP地址.
+在这个场景中，OpenNESS Edge采用单节点集成方式运行，SDEWAN CNF将以POD的方式运行在OpenNESS Edge，同时将对SDEWAN CNF配置WAN接口和LAN接口，验证SDEWAN POD成功运行，并获取到IP地址.
 
 ![OpenNESS SD-WAN Scenario 2 ](sdwan-images/sdewan-vpp-scenario2.png)
+Support flavor to deploy SDEWAN VPP CNF automatically on Edge Nodes. One LAN port and one WAN port are dpdk bound.
 
 A more detailed description of this E2E test is provided under the link in the OpenNESS documentation for this SD-WAN [scenario](https://github.com/otcshare/x-test/blob/br_tieto_pr_test_plan/test_plans/ned/integration/ts46-sdwan-vpp.md).
 
@@ -808,6 +810,7 @@ A more detailed description of this E2E test is provided under the link in the O
 场景3在场景1，场景2的基础上进一步验证Overlay network的配置，需要同时在Hub cluster和Edge cluster中部署SDEWAN CNF，并使能IKEv2和IPsec功能。
 
 ![OpenNESS SD-WAN Scenario 3 ](sdwan-images/sdewan-vpp-scenario3.png)
+Verify data flow base on 3 single cluster topology. Ipsec CRs should be configurated on Overlay controller.
 
 ##### Prerequisites
 
@@ -1159,6 +1162,7 @@ A more detailed description of this E2E test is provided under the link in the O
 场景4在场景3的基础上进一步验证Overlay network的数据流量通路，采用Hub-Spoke组网模型，需要同时在Hub cluster和两个Edge cluster中部署SDEWAN CNF，并使能IKEv2和IPsec功能，验证流量从EdgeA cluster app1 pod，经Hub cluster，到达EdgeB cluster app2 pod的通路可达性。
 
 ![OpenNESS SD-WAN Scenario 3 ](sdwan-images/sdewan-vpp-scenario4.png)
+Data flow from EdgeA -> Hub -> EdgeB through IPSec Tunnel with 3 single cluster test topology. Ipsec CRs should be configurated based on ido-ceek deployment.
 
 ##### Prerequisites
 
