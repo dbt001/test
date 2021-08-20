@@ -311,6 +311,7 @@ A more detailed description of this E2E test is provided under the link in the O
 | CRD         | Custom Resource Definition                                    |
 | CNF         | Cloud-native Network Function                                 |
 | DNAT        | Destination Network Address Translation                       |
+| FQDN        | Fully Qualified Domain Name                                   |
 | HDDL        | High Density Deep Learning                                    |
 | IP          | Internet Protocol                                             |
 | NAT         | Network Address Translation                                   |
